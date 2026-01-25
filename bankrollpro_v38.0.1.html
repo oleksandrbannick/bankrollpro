@@ -11,7 +11,30 @@
 <meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true">
 <link rel="icon" href="https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true" type="image/png">
-<link rel="manifest" href="./manifest.json">
+<script>
+(function(){
+    const iconUrl = "https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true";
+    const manifest = {
+        name: "Bankroll Pro",
+        short_name: "Bankroll",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#000000",
+        theme_color: "#1e3a5f",
+        icons: [
+            { src: iconUrl, sizes: "512x512", type: "image/png" },
+            { src: iconUrl, sizes: "192x192", type: "image/png" },
+            { src: iconUrl, sizes: "180x180", type: "image/png" }
+        ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = url;
+    document.head.appendChild(link);
+})();
+</script>
 <!-- Firebase SDKs -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
