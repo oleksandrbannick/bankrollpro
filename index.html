@@ -20,7 +20,7 @@
         start_url: "./",
         display: "standalone",
         background_color: "#000000",
-        theme_color: "#1e3a5f",
+        theme_color: "#071a0e",
         icons: [
             { src: iconUrl, sizes: "512x512", type: "image/png" },
             { src: iconUrl, sizes: "192x192", type: "image/png" },
@@ -358,7 +358,7 @@
     /* --- THEME: MIDNIGHT FINANCE --- */
     :root {
         --bg: #000000;
-        --bg-gradient: linear-gradient(180deg, #0a1628 0%, #000000 40%);
+        --bg-gradient: linear-gradient(180deg, #071a0e 0%, #000000 40%);
         --surface: rgba(13, 17, 23, 0.8);
         --surface-solid: #0d1117;
         --surface-elevated: rgba(22, 27, 34, 0.85);
@@ -366,10 +366,10 @@
         --glass: rgba(13, 17, 23, 0.6);
         --glass-border: rgba(255,255,255,0.06);
         --border: rgba(255,255,255,0.08);
-        --border-focus: rgba(88, 166, 255, 0.4);
+        --border-focus: rgba(0, 255, 135, 0.4);
 
-        --primary: #58a6ff;
-        --primary-bg: rgba(88, 166, 255, 0.15);
+        --primary: #00FF87;
+        --primary-bg: rgba(0, 255, 135, 0.12);
 
         --success: #3fb950;
         --success-bg: rgba(63, 185, 80, 0.15);
@@ -380,8 +380,8 @@
         --danger: #f85149;
         --danger-bg: rgba(248, 81, 73, 0.15);
 
-        --purple: #a371f7;
-        --purple-bg: rgba(163, 113, 247, 0.15);
+        --purple: #BF40FF;
+        --purple-bg: rgba(191, 64, 255, 0.15);
 
         --text: #f0f6fc;
         --text-secondary: #8b949e;
@@ -399,7 +399,7 @@
     /* --- LIGHT THEME --- */
     [data-theme="light"] {
         --bg: #f6f8fa;
-        --bg-gradient: linear-gradient(180deg, #e8edf3 0%, #f6f8fa 40%);
+        --bg-gradient: linear-gradient(180deg, #e8f5ee 0%, #f6f8fa 40%);
         --surface: rgba(255, 255, 255, 0.85);
         --surface-solid: #ffffff;
         --surface-elevated: rgba(255, 255, 255, 0.92);
@@ -407,17 +407,17 @@
         --glass: rgba(255, 255, 255, 0.65);
         --glass-border: rgba(0,0,0,0.06);
         --border: rgba(0,0,0,0.1);
-        --border-focus: rgba(88, 166, 255, 0.5);
-        --primary: #0969da;
-        --primary-bg: rgba(9, 105, 218, 0.12);
+        --border-focus: rgba(0, 200, 100, 0.5);
+        --primary: #00B35F;
+        --primary-bg: rgba(0, 179, 95, 0.12);
         --success: #1a7f37;
         --success-bg: rgba(26, 127, 55, 0.12);
         --warning: #9a6700;
         --warning-bg: rgba(154, 103, 0, 0.12);
         --danger: #cf222e;
         --danger-bg: rgba(207, 34, 46, 0.12);
-        --purple: #8250df;
-        --purple-bg: rgba(130, 80, 223, 0.12);
+        --purple: #9333EA;
+        --purple-bg: rgba(147, 51, 234, 0.12);
         --text: #1f2328;
         --text-secondary: #656d76;
         --text-muted: #8b949e;
@@ -440,7 +440,7 @@
     /* --- HERO SECTION --- */
     .hero-section {
         padding: 20px 20px 24px 20px;
-        background: linear-gradient(180deg, rgba(88, 166, 255, 0.08) 0%, transparent 100%);
+        background: linear-gradient(180deg, rgba(0, 255, 135, 0.06) 0%, transparent 100%);
         border-bottom: 1px solid var(--border);
     }
     
@@ -532,7 +532,7 @@
     .quick-action-btn.primary {
         background: var(--primary); color: #000;
     }
-    .quick-action-btn.primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(88,166,255,0.3); }
+    .quick-action-btn.primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,255,135,0.3); }
     .quick-action-btn:active { transform: scale(0.96); transition: transform 0.1s; }
     .quick-action-btn.success {
         background: var(--surface); color: var(--success);
@@ -1183,6 +1183,96 @@
         height: 40px; flex: 1; border-radius: var(--radius-sm);
     }
 
+    /* --- AMBIENT GRADIENT ORBS --- */
+    .ambient-orbs {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .ambient-orb {
+        position: absolute; border-radius: 50%;
+        filter: blur(80px); opacity: 0;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        will-change: transform, opacity;
+    }
+    .ambient-orb.orb-1 {
+        width: 350px; height: 350px;
+        background: radial-gradient(circle, rgba(0,255,135,0.25) 0%, transparent 70%);
+        top: -80px; left: -60px;
+        animation: orbFloat1 25s ease-in-out infinite alternate;
+    }
+    .ambient-orb.orb-2 {
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(191,64,255,0.2) 0%, transparent 70%);
+        top: 30%; right: -80px;
+        animation: orbFloat2 30s ease-in-out infinite alternate;
+    }
+    .ambient-orb.orb-3 {
+        width: 250px; height: 250px;
+        background: radial-gradient(circle, rgba(0,255,135,0.12) 0%, rgba(191,64,255,0.08) 50%, transparent 70%);
+        bottom: 15%; left: 10%;
+        animation: orbFloat3 35s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat1 {
+        0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+        33%  { transform: translate(60px, 80px) scale(1.15); opacity: 0.45; }
+        66%  { transform: translate(-30px, 120px) scale(0.95); opacity: 0.55; }
+        100% { transform: translate(40px, 40px) scale(1.1); opacity: 0.5; }
+    }
+    @keyframes orbFloat2 {
+        0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+        33%  { transform: translate(-70px, 50px) scale(1.1); opacity: 0.4; }
+        66%  { transform: translate(-40px, -60px) scale(0.9); opacity: 0.55; }
+        100% { transform: translate(-80px, 30px) scale(1.05); opacity: 0.45; }
+    }
+    @keyframes orbFloat3 {
+        0%   { transform: translate(0, 0) scale(1); opacity: 0.4; }
+        33%  { transform: translate(50px, -40px) scale(1.1); opacity: 0.35; }
+        66%  { transform: translate(-20px, -80px) scale(0.95); opacity: 0.5; }
+        100% { transform: translate(30px, -50px) scale(1.08); opacity: 0.4; }
+    }
+    /* Reduce orbs in light mode */
+    [data-theme="light"] .ambient-orb { filter: blur(100px); }
+    [data-theme="light"] .ambient-orb.orb-1 { background: radial-gradient(circle, rgba(0,179,95,0.1) 0%, transparent 70%); }
+    [data-theme="light"] .ambient-orb.orb-2 { background: radial-gradient(circle, rgba(147,51,234,0.08) 0%, transparent 70%); }
+    [data-theme="light"] .ambient-orb.orb-3 { background: radial-gradient(circle, rgba(0,179,95,0.06) 0%, transparent 70%); }
+
+    /* --- FLOATING PARTICLES CANVAS --- */
+    #particle-canvas {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 1; pointer-events: none;
+    }
+
+    /* --- BALANCE GLOW PULSE --- */
+    .hero-balance-amount {
+        text-shadow: 0 0 20px rgba(0,255,135,0.15), 0 0 60px rgba(0,255,135,0.05);
+        animation: balanceGlow 4s ease-in-out infinite;
+    }
+    @keyframes balanceGlow {
+        0%, 100% { text-shadow: 0 0 20px rgba(0,255,135,0.1), 0 0 60px rgba(0,255,135,0.03); }
+        50%      { text-shadow: 0 0 30px rgba(0,255,135,0.25), 0 0 80px rgba(0,255,135,0.08), 0 0 120px rgba(191,64,255,0.04); }
+    }
+    [data-theme="light"] .hero-balance-amount {
+        text-shadow: none;
+        animation: balanceGlowLight 4s ease-in-out infinite;
+    }
+    @keyframes balanceGlowLight {
+        0%, 100% { text-shadow: 0 0 20px rgba(0,179,95,0.06); }
+        50%      { text-shadow: 0 0 30px rgba(0,179,95,0.12); }
+    }
+
+    /* Ensure content sits above ambient layers */
+    .hero-section, #main-content, .bottom-nav, .quick-actions,
+    .screen, .toast, .onboarding-overlay, #confetti-canvas {
+        position: relative; z-index: 2;
+    }
+    .bottom-nav { z-index: 100; }
+    .screen { z-index: 200; }
+    .toast { z-index: 300; }
+    #confetti-canvas { z-index: 400; }
+    .onboarding-overlay { z-index: 500; }
+
     /* --- NUMBER ANIMATION --- */
     .number-animate {
         display: inline-block;
@@ -1314,6 +1404,14 @@
 </head>
 <body>
 
+<!-- Ambient Background Layers -->
+<div class="ambient-orbs">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+</div>
+<canvas id="particle-canvas"></canvas>
+
 <!-- Pull to Refresh Indicator -->
 <div class="ptr-container" id="ptr-container">
     <div class="ptr-spinner" id="ptr-spinner"></div>
@@ -1437,9 +1535,9 @@
                 <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#00D9FF;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                            <stop offset="0%" style="stop-color:#00FF87;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#00CC6A;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#BF40FF;stop-opacity:1" />
                         </linearGradient>
                         <linearGradient id="greenGrad" x1="0%" y1="100%" x2="100%" y2="0%">
                             <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
@@ -1683,17 +1781,30 @@
     
     <div id="odds-view" class="hidden">
         <div class="odds-api-setup" id="odds-api-setup">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-size:14px; font-weight:700;">🔑 Odds API Key</div>
-                <button onclick="clearOddsApiKey()" id="clear-api-btn" style="display:none; padding:4px 10px; border-radius:6px; background:var(--danger-bg); color:var(--danger); font-size:11px; font-weight:600; border:none; cursor:pointer;">Clear Key</button>
+            <!-- Saved key state (compact) -->
+            <div id="api-key-saved" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:8px; height:8px; border-radius:50%; background:var(--success);"></div>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">API Key Active</span>
+                    </div>
+                    <button onclick="showApiKeyEditor()" style="padding:6px 14px; border-radius:8px; background:var(--surface-elevated); border:1px solid var(--border); color:var(--text-secondary); font-size:12px; font-weight:600; cursor:pointer;">Change Key</button>
+                </div>
             </div>
-            <div style="display:flex; gap:8px;">
-                <input type="text" id="odds-api-key-input" placeholder="Enter your API key" 
-                       style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-elevated); color:var(--text); font-size:14px;">
-                <button onclick="saveOddsApiKey()" style="padding:12px 20px; border-radius:8px; background:var(--primary); color:#000; font-weight:700; border:none; cursor:pointer;">Save</button>
-            </div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
-                Get a free key at <a href="https://the-odds-api.com" target="_blank" style="color:var(--primary);">the-odds-api.com</a>
+            <!-- Editor state (full input) -->
+            <div id="api-key-editor">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-size:14px; font-weight:700;"><i data-lucide="key-round" style="width:14px;height:14px;display:inline;vertical-align:-2px;"></i> Odds API Key</div>
+                    <button onclick="clearOddsApiKey()" id="clear-api-btn" style="display:none; padding:4px 10px; border-radius:6px; background:var(--danger-bg); color:var(--danger); font-size:11px; font-weight:600; border:none; cursor:pointer;">Clear Key</button>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="odds-api-key-input" placeholder="Enter your API key"
+                           style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-elevated); color:var(--text); font-size:14px;">
+                    <button onclick="saveOddsApiKey()" style="padding:12px 20px; border-radius:8px; background:var(--primary); color:#000; font-weight:700; border:none; cursor:pointer;">Save</button>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+                    Get a free key at <a href="https://the-odds-api.com" target="_blank" style="color:var(--primary);">the-odds-api.com</a>
+                </div>
             </div>
         </div>
         <div id="odds-content"></div>
@@ -2484,8 +2595,8 @@
 
         // Draw gradient line
         const grad = ctx.createLinearGradient(0, 0, w, 0); 
-        grad.addColorStop(0, "#58a6ff"); 
-        grad.addColorStop(1, "#3fb950");
+        grad.addColorStop(0, "#BF40FF");
+        grad.addColorStop(1, "#00FF87");
         ctx.strokeStyle = grad;
         ctx.lineWidth = 3;
         ctx.lineJoin = "round";
@@ -2516,8 +2627,8 @@
         ctx.lineTo(graphPts[graphPts.length-1].x, h);
         ctx.lineTo(graphPts[0].x, h);
         const fillGrad = ctx.createLinearGradient(0, 0, 0, h);
-        fillGrad.addColorStop(0, "rgba(63, 185, 80, 0.25)");
-        fillGrad.addColorStop(0.5, "rgba(88, 166, 255, 0.08)");
+        fillGrad.addColorStop(0, "rgba(0, 255, 135, 0.2)");
+        fillGrad.addColorStop(0.5, "rgba(191, 64, 255, 0.06)");
         fillGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
         ctx.fillStyle = fillGrad;
         ctx.fill();
@@ -2530,7 +2641,7 @@
             ctx.beginPath();
             ctx.arc(x,y,6,0,Math.PI*2);
             ctx.fill();
-            ctx.fillStyle = "#3fb950";
+            ctx.fillStyle = "#00FF87";
             ctx.beginPath();
             ctx.arc(x,y,4,0,Math.PI*2);
             ctx.fill();
@@ -2602,7 +2713,7 @@
                 ctx.beginPath();
                 ctx.arc(pt.x,pt.y,6,0,Math.PI*2);
                 ctx.fill();
-                ctx.fillStyle = "#3fb950";
+                ctx.fillStyle = "#00FF87";
                 ctx.beginPath();
                 ctx.arc(pt.x,pt.y,4,0,Math.PI*2);
                 ctx.fill();
@@ -2610,7 +2721,7 @@
 
             if(closest && minDist < 30) {
                 // Highlight point
-                ctx.strokeStyle = "#58a6ff"; 
+                ctx.strokeStyle = "#00FF87"; 
                 ctx.lineWidth = 2; 
                 ctx.beginPath(); 
                 ctx.arc(closest.x, closest.y, 10, 0, Math.PI*2); 
@@ -2632,7 +2743,7 @@
                 ctx.strokeStyle = isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
                 ctx.lineWidth = 1;
                 ctx.stroke();
-                ctx.fillStyle = "#3fb950";
+                ctx.fillStyle = "#00FF87";
                 ctx.font = "bold 14px 'Inter', -apple-system, sans-serif";
                 ctx.textAlign = "center";
                 ctx.fillText("$" + closest.data.v.toLocaleString(), tx + tooltipW/2, ty + 22);
@@ -3415,48 +3526,69 @@
         }
         localStorage.setItem('odds_api_key', key);
         showToast('API key saved!');
+        updateApiKeyUI();
         loadOdds();
     }
-    
+
     function clearOddsApiKey() {
         if(confirm('Remove your API key?')) {
             localStorage.removeItem('odds_api_key');
             document.getElementById('odds-api-key-input').value = '';
             showToast('API key removed');
+            updateApiKeyUI();
             loadOdds();
         }
     }
-    
-    function showOddsApiSetup() {
-        const setupDiv = document.getElementById('odds-api-setup');
-        const settingsBtn = document.getElementById('odds-settings-btn');
+
+    function showApiKeyEditor() {
+        const saved = document.getElementById('api-key-saved');
+        const editor = document.getElementById('api-key-editor');
         const clearBtn = document.getElementById('clear-api-btn');
         const input = document.getElementById('odds-api-key-input');
         const key = localStorage.getItem('odds_api_key');
-        
-        setupDiv.style.display = 'block';
-        settingsBtn.style.display = 'none';
-        clearBtn.style.display = 'block';
+        if(saved) saved.style.display = 'none';
+        if(editor) editor.style.display = 'block';
+        if(clearBtn && key) clearBtn.style.display = 'inline-block';
+        if(input && key) input.value = key;
+    }
+
+    function updateApiKeyUI() {
+        const key = localStorage.getItem('odds_api_key');
+        const saved = document.getElementById('api-key-saved');
+        const editor = document.getElementById('api-key-editor');
+        const setupDiv = document.getElementById('odds-api-setup');
         if(key) {
-            input.value = key;
+            // Key exists — show compact saved state
+            if(setupDiv) setupDiv.style.display = 'block';
+            if(saved) saved.style.display = 'block';
+            if(editor) editor.style.display = 'none';
+        } else {
+            // No key — show full editor
+            if(setupDiv) setupDiv.style.display = 'block';
+            if(saved) saved.style.display = 'none';
+            if(editor) editor.style.display = 'block';
         }
+    }
+
+    function showOddsApiSetup() {
+        const setupDiv = document.getElementById('odds-api-setup');
+        if(setupDiv) setupDiv.style.display = 'block';
+        showApiKeyEditor();
     }
     
     async function loadOdds() {
         const container = document.getElementById('odds-content');
-        const setupDiv = document.getElementById('odds-api-setup');
         const key = localStorage.getItem('odds_api_key');
-        
-        if(!key) { 
-            setupDiv.style.display = 'block';
+        updateApiKeyUI();
+
+        if(!key) {
             container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">
-                <div style="font-size:48px; margin-bottom:16px;">🔑</div>
+                <div style="font-size:48px; margin-bottom:16px;"><i data-lucide="key-round" style="width:48px;height:48px;"></i></div>
                 <div style="font-size:14px;">Enter your API key above to load odds</div>
-            </div>`; 
-            return; 
+            </div>`;
+            if(window.lucide) lucide.createIcons();
+            return;
         }
-        
-        setupDiv.style.display = 'none';
         container.innerHTML = `<div style="padding:12px;color:#9CA3AF">Loading sports...</div>`;
         
         try {
@@ -3682,6 +3814,117 @@
        DESIGN UPGRADE v39 — New Features
     ======================================== */
 
+    // --- FLOATING PARTICLE SYSTEM ---
+    (function initParticles() {
+        const canvas = document.getElementById('particle-canvas');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animId = null;
+        let w, h;
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const PARTICLE_COUNT = 45;
+        const colors = [
+            { r: 0, g: 255, b: 135 },   // neon green
+            { r: 191, g: 64, b: 255 },   // neon purple
+            { r: 0, g: 204, b: 106 },    // mid green
+            { r: 160, g: 80, b: 255 },   // light purple
+        ];
+
+        function createParticle() {
+            const col = colors[Math.floor(Math.random() * colors.length)];
+            return {
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: Math.random() * 2.5 + 1,
+                speedX: (Math.random() - 0.5) * 0.3,
+                speedY: (Math.random() - 0.5) * 0.25 - 0.1,
+                opacity: Math.random() * 0.4 + 0.1,
+                targetOpacity: Math.random() * 0.5 + 0.15,
+                fadeSpeed: 0.002 + Math.random() * 0.004,
+                fadingIn: Math.random() > 0.5,
+                r: col.r, g: col.g, b: col.b,
+                pulse: Math.random() * Math.PI * 2,
+                pulseSpeed: 0.008 + Math.random() * 0.015,
+            };
+        }
+
+        for(let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push(createParticle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const opacityMult = isLight ? 0.4 : 1;
+
+            particles.forEach(p => {
+                // Move
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                // Twinkle
+                p.pulse += p.pulseSpeed;
+                const pulseFactor = 0.7 + Math.sin(p.pulse) * 0.3;
+
+                // Fade in/out
+                if(p.fadingIn) {
+                    p.opacity += p.fadeSpeed;
+                    if(p.opacity >= p.targetOpacity) { p.fadingIn = false; }
+                } else {
+                    p.opacity -= p.fadeSpeed;
+                    if(p.opacity <= 0.05) {
+                        p.fadingIn = true;
+                        p.targetOpacity = Math.random() * 0.5 + 0.15;
+                    }
+                }
+
+                // Wrap around edges
+                if(p.x < -10) p.x = w + 10;
+                if(p.x > w + 10) p.x = -10;
+                if(p.y < -10) p.y = h + 10;
+                if(p.y > h + 10) p.y = -10;
+
+                // Draw
+                const finalOpacity = p.opacity * pulseFactor * opacityMult;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
+                ctx.fill();
+
+                // Soft glow
+                if(p.size > 1.5) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.08})`;
+                    ctx.fill();
+                }
+            });
+
+            animId = requestAnimationFrame(animate);
+        }
+
+        // Start with a slight delay so page loads first
+        setTimeout(() => animate(), 500);
+
+        // Pause when tab is hidden to save battery
+        document.addEventListener('visibilitychange', () => {
+            if(document.hidden) {
+                cancelAnimationFrame(animId);
+            } else {
+                animate();
+            }
+        });
+    })();
+
     // --- ANIMATED NUMBER TRANSITIONS ---
     let _prevTotalBalance = null;
     function animateValue(element, newValue, prefix, suffix) {
@@ -3726,7 +3969,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const colors = ['#3fb950', '#58a6ff', '#d29922', '#a371f7', '#f85149', '#00D9FF', '#FFD700'];
+        const colors = ['#00FF87', '#BF40FF', '#3fb950', '#d29922', '#f85149', '#00FFAA', '#E040FB'];
         const particles = [];
         for(let i = 0; i < 120; i++) {
             particles.push({
