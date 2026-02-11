@@ -91,7 +91,7 @@
       if (user) {
         document.getElementById('auth-btn').innerHTML = '<i data-lucide="log-out"></i>';
         document.getElementById('auth-btn').onclick = () => signOutUser();
-        if(window.lucide) lucide.createIcons();
+        if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
       }
       return;
     }
@@ -113,7 +113,7 @@
 
       document.getElementById('auth-btn').innerHTML = '<i data-lucide="log-out"></i>';
       document.getElementById('auth-btn').onclick = () => signOutUser();
-      if(window.lucide) lucide.createIcons();
+      if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
     } else {
       // User signed out: Reset session flags so next sign-in loads fresh
       hasLoadedForSession = false;
@@ -122,7 +122,7 @@
       renderActiveBets();
       document.getElementById('auth-btn').innerHTML = '<i data-lucide="lock"></i>';
       document.getElementById('auth-btn').onclick = () => toggleAuthModal();
-      if(window.lucide) lucide.createIcons();
+      if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
       showToast('Signed out - Local data preserved');
     }
   });
@@ -324,28 +324,9 @@
 
   // Manual sync function for debugging
   window.syncData = async () => {
-    console.log('Manual sync requested');
     await saveUserDataToFirestore();
     await loadUserDataFromFirestore();
     showToast('Data synced manually');
-  };
-
-  // Test Firebase connection
-  window.testFirebase = async () => {
-    try {
-      console.log('Testing Firebase connection...');
-      const testDoc = doc(db, 'test', 'connection');
-      await setDoc(testDoc, { timestamp: new Date().toISOString(), test: true });
-      console.log('Firebase write test successful');
-      const docSnap = await getDoc(testDoc);
-      if (docSnap.exists()) {
-        console.log('Firebase read test successful:', docSnap.data());
-        showToast('Firebase connection OK!');
-      }
-    } catch (error) {
-      console.error('Firebase test failed:', error);
-      showToast('Firebase error: ' + error.message);
-    }
   };
 </script>
 <!-- Inter Font -->
@@ -481,10 +462,36 @@
     .hero-change {
         display: inline-flex; align-items: center; gap: 6px;
         margin-top: 12px; padding: 6px 14px;
-        background: var(--success-bg); color: var(--success);
+        background: linear-gradient(90deg, rgba(0,255,135,0.08), rgba(63,185,80,0.2), rgba(0,255,135,0.08));
+        background-size: 200% 100%;
+        color: var(--success);
         border-radius: 20px; font-size: 14px; font-weight: 600;
+        border: 1px solid rgba(0,255,135,0.15);
+        animation: pillFlow 3s ease-in-out infinite, pillNeonPulse 2.5s ease-in-out infinite;
     }
-    .hero-change.negative { background: var(--danger-bg); color: var(--danger); }
+    .hero-change.negative {
+        background: linear-gradient(90deg, rgba(248,81,73,0.08), rgba(248,81,73,0.2), rgba(248,81,73,0.08));
+        background-size: 200% 100%;
+        color: var(--danger);
+        border-color: rgba(248,81,73,0.15);
+        animation: pillFlow 3s ease-in-out infinite, pillNeonPulseDanger 2.5s ease-in-out infinite;
+    }
+    @keyframes pillFlow {
+        0%, 100% { background-position: 0% center; }
+        50% { background-position: 100% center; }
+    }
+    @keyframes pillNeonPulse {
+        0%, 100% { box-shadow: 0 0 4px rgba(0,255,135,0.1); text-shadow: 0 0 6px rgba(0,255,135,0.15); }
+        30%      { box-shadow: 0 0 12px rgba(0,255,135,0.25), 0 0 25px rgba(0,255,135,0.08); text-shadow: 0 0 12px rgba(0,255,135,0.35); }
+        60%      { box-shadow: 0 0 6px rgba(0,255,135,0.12); text-shadow: 0 0 8px rgba(0,255,135,0.2); }
+        85%      { box-shadow: 0 0 16px rgba(0,255,135,0.3), 0 0 30px rgba(0,255,135,0.1); text-shadow: 0 0 14px rgba(0,255,135,0.4); }
+    }
+    @keyframes pillNeonPulseDanger {
+        0%, 100% { box-shadow: 0 0 4px rgba(248,81,73,0.1); text-shadow: 0 0 6px rgba(248,81,73,0.15); }
+        30%      { box-shadow: 0 0 12px rgba(248,81,73,0.25), 0 0 25px rgba(248,81,73,0.08); text-shadow: 0 0 12px rgba(248,81,73,0.35); }
+        60%      { box-shadow: 0 0 6px rgba(248,81,73,0.12); text-shadow: 0 0 8px rgba(248,81,73,0.2); }
+        85%      { box-shadow: 0 0 16px rgba(248,81,73,0.3), 0 0 30px rgba(248,81,73,0.1); text-shadow: 0 0 14px rgba(248,81,73,0.4); }
+    }
     
     .hero-stats {
         display: flex; justify-content: center; align-items: center;
@@ -506,10 +513,38 @@
     .hero-stat-value {
         font-size: 16px; font-weight: 700; color: var(--text);
         font-family: "SF Mono", monospace;
+        transition: text-shadow 0.3s ease;
     }
-    .hero-stat-value.bonus { color: var(--warning); }
-    .hero-stat-value.pos { color: var(--success); }
-    .hero-stat-value.neg { color: var(--danger); }
+    .hero-stat-value.bonus {
+        color: var(--warning);
+        animation: neonGlowWarn 2.5s ease-in-out infinite;
+    }
+    .hero-stat-value.pos {
+        color: var(--success);
+        animation: neonGlowSuccess 2s ease-in-out infinite;
+    }
+    .hero-stat-value.neg {
+        color: var(--danger);
+        animation: neonGlowDanger 2s ease-in-out infinite;
+    }
+    @keyframes neonGlowSuccess {
+        0%, 100% { text-shadow: 0 0 6px rgba(63,185,80,0.15); }
+        30%      { text-shadow: 0 0 14px rgba(63,185,80,0.4), 0 0 30px rgba(63,185,80,0.12); }
+        60%      { text-shadow: 0 0 8px rgba(63,185,80,0.2); }
+        80%      { text-shadow: 0 0 18px rgba(63,185,80,0.5), 0 0 40px rgba(63,185,80,0.15); }
+    }
+    @keyframes neonGlowDanger {
+        0%, 100% { text-shadow: 0 0 6px rgba(248,81,73,0.15); }
+        30%      { text-shadow: 0 0 14px rgba(248,81,73,0.4), 0 0 30px rgba(248,81,73,0.12); }
+        60%      { text-shadow: 0 0 8px rgba(248,81,73,0.2); }
+        80%      { text-shadow: 0 0 18px rgba(248,81,73,0.5), 0 0 40px rgba(248,81,73,0.15); }
+    }
+    @keyframes neonGlowWarn {
+        0%, 100% { text-shadow: 0 0 6px rgba(210,153,34,0.15); }
+        30%      { text-shadow: 0 0 12px rgba(210,153,34,0.35), 0 0 25px rgba(210,153,34,0.1); }
+        60%      { text-shadow: 0 0 8px rgba(210,153,34,0.2); }
+        80%      { text-shadow: 0 0 16px rgba(210,153,34,0.45), 0 0 35px rgba(210,153,34,0.12); }
+    }
     
     .hero-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
     
@@ -530,6 +565,12 @@
     }
     .quick-action-btn.primary {
         background: var(--primary); color: #000;
+        box-shadow: 0 0 10px rgba(0,255,135,0.15);
+        animation: btnGlow 3s ease-in-out infinite;
+    }
+    @keyframes btnGlow {
+        0%, 100% { box-shadow: 0 0 8px rgba(0,255,135,0.12); }
+        50%      { box-shadow: 0 0 18px rgba(0,255,135,0.3), 0 0 35px rgba(0,255,135,0.08); }
     }
     .quick-action-btn.primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,255,135,0.3); }
     .quick-action-btn:active { transform: scale(0.96); transition: transform 0.1s; }
@@ -593,7 +634,13 @@
         transition: all var(--transition-medium);
         position: relative;
     }
-    .card:hover { background: var(--surface-hover); border-color: var(--border-focus); border-left-color: var(--card-accent, var(--primary)); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .card:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-focus);
+        border-left-color: var(--card-accent, var(--primary));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 25px color-mix(in srgb, var(--card-accent, var(--primary)) 25%, transparent);
+    }
     .card:active { transform: scale(0.98); transition: transform 0.1s; }
     
     .card-inner {
@@ -612,7 +659,23 @@
     
     .card-right { text-align: right; }
     
-    .card-cash { font-size: 22px; font-weight: 700; color: var(--text); font-family: "SF Mono", monospace; }
+    .card-cash {
+        font-size: 22px; font-weight: 700; color: var(--text); font-family: "SF Mono", monospace;
+        animation: cardCashGlow 3s ease-in-out infinite;
+    }
+    @keyframes cardCashGlow {
+        0%, 100% { text-shadow: 0 0 8px var(--card-accent, rgba(0,255,135,0.2)); }
+        25%      { text-shadow: 0 0 14px var(--card-accent, rgba(0,255,135,0.35)), 0 0 28px var(--card-accent, rgba(0,255,135,0.1)); }
+        50%      { text-shadow: 0 0 6px var(--card-accent, rgba(0,255,135,0.15)); }
+        75%      { text-shadow: 0 0 16px var(--card-accent, rgba(0,255,135,0.4)), 0 0 35px var(--card-accent, rgba(0,255,135,0.12)); }
+    }
+    .card:hover .card-cash {
+        animation: cardCashGlowHover 1.5s ease-in-out infinite;
+    }
+    @keyframes cardCashGlowHover {
+        0%, 100% { text-shadow: 0 0 14px var(--card-accent, rgba(0,255,135,0.4)), 0 0 30px var(--card-accent, rgba(0,255,135,0.12)); }
+        50%      { text-shadow: 0 0 24px var(--card-accent, rgba(0,255,135,0.6)), 0 0 50px var(--card-accent, rgba(0,255,135,0.2)), 0 0 80px var(--card-accent, rgba(0,255,135,0.06)); }
+    }
     
     .card-badges { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
     
@@ -643,7 +706,24 @@
         color: var(--text-muted);
     }
     .nav-item:hover { color: var(--text-secondary); }
-    .nav-item.active { color: var(--primary); background: var(--primary-bg); }
+    .nav-item.active {
+        color: var(--primary);
+        background: var(--primary-bg);
+        position: relative;
+    }
+    .nav-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: 2px; left: 50%; transform: translateX(-50%);
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--primary);
+        animation: navDotPulse 2s ease-in-out infinite;
+    }
+    @keyframes navDotPulse {
+        0%, 100% { box-shadow: 0 0 6px var(--primary), 0 0 12px rgba(0,255,135,0.2); }
+        50%      { box-shadow: 0 0 12px var(--primary), 0 0 24px rgba(0,255,135,0.4), 0 0 40px rgba(0,255,135,0.1); }
+    }
     .nav-item:active { transform: scale(0.9); transition: transform 0.1s; }
 
     .nav-icon { font-size: 20px; display: flex; align-items: center; justify-content: center; }
@@ -1210,6 +1290,12 @@
         bottom: 15%; left: 10%;
         animation: orbFloat3 35s ease-in-out infinite alternate;
     }
+    .ambient-orb.orb-4 {
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(0,217,255,0.15) 0%, rgba(0,255,135,0.06) 50%, transparent 70%);
+        bottom: 50%; right: 15%;
+        animation: orbFloat4 28s ease-in-out infinite alternate;
+    }
     @keyframes orbFloat1 {
         0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
         33%  { transform: translate(60px, 80px) scale(1.15); opacity: 0.45; }
@@ -1228,11 +1314,18 @@
         66%  { transform: translate(-20px, -80px) scale(0.95); opacity: 0.5; }
         100% { transform: translate(30px, -50px) scale(1.08); opacity: 0.4; }
     }
+    @keyframes orbFloat4 {
+        0%   { transform: translate(0, 0) scale(1); opacity: 0.35; }
+        33%  { transform: translate(-50px, 60px) scale(1.12); opacity: 0.3; }
+        66%  { transform: translate(30px, 100px) scale(0.9); opacity: 0.45; }
+        100% { transform: translate(-30px, 40px) scale(1.06); opacity: 0.35; }
+    }
     /* Reduce orbs in light mode */
     [data-theme="light"] .ambient-orb { filter: blur(100px); }
     [data-theme="light"] .ambient-orb.orb-1 { background: radial-gradient(circle, rgba(0,179,95,0.1) 0%, transparent 70%); }
     [data-theme="light"] .ambient-orb.orb-2 { background: radial-gradient(circle, rgba(147,51,234,0.08) 0%, transparent 70%); }
     [data-theme="light"] .ambient-orb.orb-3 { background: radial-gradient(circle, rgba(0,179,95,0.06) 0%, transparent 70%); }
+    [data-theme="light"] .ambient-orb.orb-4 { background: radial-gradient(circle, rgba(0,180,220,0.06) 0%, transparent 70%); }
 
     /* --- FLOATING PARTICLES CANVAS --- */
     #particle-canvas {
@@ -1240,22 +1333,61 @@
         z-index: 1; pointer-events: none;
     }
 
-    /* --- BALANCE GLOW PULSE --- */
+    /* --- BALANCE GLOW PULSE + HOLOGRAPHIC SHIMMER + NEON ALIVE --- */
     .hero-balance-amount {
-        text-shadow: 0 0 20px rgba(0,255,135,0.15), 0 0 60px rgba(0,255,135,0.05);
-        animation: balanceGlow 4s ease-in-out infinite;
+        position: relative;
+        background: linear-gradient(
+            90deg,
+            var(--text) 0%, var(--text) 30%,
+            rgba(0,255,135,0.95) 42%, rgba(191,64,255,0.85) 50%, rgba(0,255,135,0.95) 58%,
+            var(--text) 70%, var(--text) 100%
+        );
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmerSweep 5s ease-in-out infinite, neonPulseBalance 2s ease-in-out infinite;
     }
-    @keyframes balanceGlow {
-        0%, 100% { text-shadow: 0 0 20px rgba(0,255,135,0.1), 0 0 60px rgba(0,255,135,0.03); }
-        50%      { text-shadow: 0 0 30px rgba(0,255,135,0.25), 0 0 80px rgba(0,255,135,0.08), 0 0 120px rgba(191,64,255,0.04); }
+    @keyframes shimmerSweep {
+        0%, 100% { background-position: 120% center; }
+        50% { background-position: -20% center; }
+    }
+    @keyframes neonPulseBalance {
+        0%, 100% { filter: drop-shadow(0 0 6px rgba(0,255,135,0.1)) drop-shadow(0 0 20px rgba(0,255,135,0.04)); }
+        25%      { filter: drop-shadow(0 0 14px rgba(0,255,135,0.25)) drop-shadow(0 0 40px rgba(191,64,255,0.08)); }
+        50%      { filter: drop-shadow(0 0 8px rgba(0,255,135,0.12)) drop-shadow(0 0 25px rgba(0,255,135,0.05)); }
+        75%      { filter: drop-shadow(0 0 18px rgba(0,255,135,0.3)) drop-shadow(0 0 50px rgba(191,64,255,0.1)); }
     }
     [data-theme="light"] .hero-balance-amount {
-        text-shadow: none;
-        animation: balanceGlowLight 4s ease-in-out infinite;
+        background: linear-gradient(
+            90deg,
+            var(--text) 0%, var(--text) 30%,
+            rgba(0,179,95,0.85) 42%, rgba(147,51,234,0.75) 50%, rgba(0,179,95,0.85) 58%,
+            var(--text) 70%, var(--text) 100%
+        );
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shimmerSweep 5s ease-in-out infinite, neonPulseBalanceLight 2s ease-in-out infinite;
     }
-    @keyframes balanceGlowLight {
-        0%, 100% { text-shadow: 0 0 20px rgba(0,179,95,0.06); }
-        50%      { text-shadow: 0 0 30px rgba(0,179,95,0.12); }
+    @keyframes neonPulseBalanceLight {
+        0%, 100% { filter: drop-shadow(0 0 4px rgba(0,179,95,0.06)); }
+        50%      { filter: drop-shadow(0 0 10px rgba(0,179,95,0.12)); }
+    }
+
+    /* --- NEON ALIVE FLICKER UTILITY --- */
+    @keyframes neonFlicker {
+        0%, 100% { text-shadow: 0 0 8px currentColor; }
+        10%      { text-shadow: 0 0 14px currentColor, 0 0 30px currentColor; }
+        20%      { text-shadow: 0 0 6px currentColor; }
+        40%      { text-shadow: 0 0 18px currentColor, 0 0 40px currentColor; }
+        50%      { text-shadow: 0 0 10px currentColor; }
+        70%      { text-shadow: 0 0 16px currentColor, 0 0 35px currentColor; }
+        80%      { text-shadow: 0 0 7px currentColor; }
+        90%      { text-shadow: 0 0 20px currentColor, 0 0 45px currentColor; }
+    }
+    .neon-alive {
+        animation: neonFlicker 3s ease-in-out infinite;
     }
 
     /* Ensure content sits above ambient layers */
@@ -1399,6 +1531,7 @@
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
     <div class="ambient-orb orb-3"></div>
+    <div class="ambient-orb orb-4"></div>
 </div>
 <canvas id="particle-canvas"></canvas>
 
@@ -1885,19 +2018,18 @@
     const FD_ICON = "https://icons.duckduckgo.com/ip3/sportsbook.fanduel.com.ico";
     const SCORE_ICON = "https://icons.duckduckgo.com/ip3/thescore.com.ico";
 
-    // In-page debug overlay and global error handlers (hidden by default)
+    // In-page debug overlay (only intercepts console when visible)
     (function(){
         const dbg = document.createElement('div'); dbg.id = 'inpage-debug';
         dbg.style.cssText = 'position:fixed;left:12px;top:12px;z-index:99999;max-width:320px;max-height:180px;overflow:auto;padding:10px;background:rgba(0,0,0,0.85);color:#fff;border:1px solid #333;border-radius:8px;font-size:11px;line-height:1.2;display:none;';
         dbg.innerHTML = '<div style="font-weight:800;margin-bottom:6px;color:#FACC15">Debug Panel</div><div id="inpage-debug-body" style="font-size:12px;color:#DDD"></div><div style="margin-top:8px;text-align:right"><button id="inpage-debug-clear" class="btn btn-secondary">Clear</button></div>';
         document.addEventListener('DOMContentLoaded', ()=>{ document.body.appendChild(dbg); document.getElementById('inpage-debug-clear').onclick = ()=>{ document.getElementById('inpage-debug-body').innerHTML = ''; }; });
 
-        function append(msg){ const b = document.getElementById('inpage-debug-body'); if(b) { const el = document.createElement('div'); el.innerText = msg; b.appendChild(el); } else console.log('DBG:', msg); }
+        window._debugVisible = false;
+        function append(msg){ if(!window._debugVisible) return; const b = document.getElementById('inpage-debug-body'); if(b) { const el = document.createElement('div'); el.innerText = msg; if(b.children.length > 50) b.removeChild(b.firstChild); b.appendChild(el); } }
 
         window.addEventListener('error', function(e){ try{ append('Error: ' + (e.message || e.error || e.toString()) + ' @ ' + (e.filename||e.srcElement?.src||'') + ':' + (e.lineno||'') ); }catch(err){} });
         window.addEventListener('unhandledrejection', function(e){ try{ append('UnhandledRejection: ' + (e.reason && e.reason.message ? e.reason.message : (e.reason || ''))); }catch(err){} });
-        const _cLog = console.log.bind(console); console.log = function(){ _cLog.apply(console, arguments); try{ append(Array.from(arguments).join(' ')); }catch(e){} };
-        const _cErr = console.error.bind(console); console.error = function(){ _cErr.apply(console, arguments); try{ append('ERROR: ' + Array.from(arguments).join(' ')); }catch(e){} };
     })();
 
     const MASTER_BOOKS = {
@@ -2049,33 +2181,6 @@
             location.reload();
         }
     }
-
-    // --- IMPORT UPDATES ---
-    function importStakesUpdate(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const updateData = JSON.parse(e.target.result);
-                if (updateData.type === "stakes_update" && Array.isArray(updateData.updates)) {
-                    let count = 0;
-                    updateData.updates.forEach(upd => {
-                        const acc = data.accounts.find(a => a.book === upd.book);
-                        if (acc) { acc.stake = parseFloat(upd.stake); count++; }
-                    });
-                    saveData();
-                    showToast(`Updated ${count} books!`);
-                    closeScreen('screen-settings');
-                } else {
-                    alert("Invalid File. Needs 'type': 'stakes_update'");
-                }
-            } catch (err) { alert("Error reading file"); }
-        };
-        reader.readAsText(file);
-        input.value = '';
-    }
-
 
     // Firebase functions
     // Firestore functions moved to module above
@@ -2638,110 +2743,62 @@
             return {x,y,data:p};
         });
 
-        // Interactive hover tooltip
+        // Interactive hover tooltip — uses overlay canvas to avoid full redraws
+        let tooltipCanvas = c.parentElement.querySelector('.tooltip-overlay');
+        if(!tooltipCanvas) {
+            tooltipCanvas = document.createElement('canvas');
+            tooltipCanvas.className = 'tooltip-overlay';
+            tooltipCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;';
+            c.parentElement.style.position = 'relative';
+            c.parentElement.appendChild(tooltipCanvas);
+        }
+        tooltipCanvas.width = w; tooltipCanvas.height = h;
+        const tctx = tooltipCanvas.getContext('2d');
+
+        let _graphRafPending = false;
         c.onmousemove = (e) => {
-            const rect = c.getBoundingClientRect(); 
-            const mx = e.clientX - rect.left; 
-            const my = e.clientY - rect.top;
-            let closest = null; 
-            let minDist = 9999;
-            points.forEach(pt => { 
-                const dx = mx - pt.x; 
-                const dy = my - pt.y; 
-                const d = Math.sqrt(dx*dx+dy*dy); 
-                if(d < minDist){ 
-                    minDist = d; 
-                    closest = pt; 
-                } 
+            if(_graphRafPending) return;
+            _graphRafPending = true;
+            requestAnimationFrame(() => {
+                _graphRafPending = false;
+                const rect = c.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) * (w / rect.width);
+                const my = (e.clientY - rect.top) * (h / rect.height);
+                let closest = null; let minDist = 9999;
+                points.forEach(pt => {
+                    const d = Math.hypot(mx - pt.x, my - pt.y);
+                    if(d < minDist){ minDist = d; closest = pt; }
+                });
+
+                tctx.clearRect(0, 0, w, h);
+
+                if(closest && minDist < 30) {
+                    // Highlight point
+                    tctx.strokeStyle = '#00FF87'; tctx.lineWidth = 2;
+                    tctx.beginPath(); tctx.arc(closest.x, closest.y, 10, 0, Math.PI*2); tctx.stroke();
+
+                    // Tooltip
+                    const tooltipW = 140, tooltipH = 50;
+                    let tx = closest.x - tooltipW/2, ty = closest.y - tooltipH - 15;
+                    if(tx < 5) tx = 5;
+                    if(tx + tooltipW > w) tx = w - tooltipW - 5;
+                    if(ty < 5) ty = closest.y + 20;
+
+                    tctx.fillStyle = chartTooltipBg;
+                    tctx.beginPath(); tctx.roundRect(tx, ty, tooltipW, tooltipH, 8); tctx.fill();
+                    tctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+                    tctx.lineWidth = 1; tctx.stroke();
+                    tctx.fillStyle = '#00FF87';
+                    tctx.font = "bold 14px 'Inter', -apple-system, sans-serif";
+                    tctx.textAlign = 'center';
+                    tctx.fillText('$' + closest.data.v.toLocaleString(), tx + tooltipW/2, ty + 22);
+                    tctx.fillStyle = chartMuted;
+                    tctx.font = "12px 'Inter', -apple-system, sans-serif";
+                    tctx.fillText(closest.data.d, tx + tooltipW/2, ty + 40);
+                }
             });
-            
-            // Redraw base
-            ctx.clearRect(0,0,w,h);
-            ctx.fillStyle = chartBg;
-            ctx.fillRect(0,0,w,h);
-
-            // Grid
-            ctx.strokeStyle = chartGrid;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for(let i=0; i<=5; i++) {
-                const y = h - ((i/5) * h);
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                const labelVal = pMin + (i/5)*(pMax-pMin);
-                const labelText = '$' + (labelVal >= 1000 ? (labelVal/1000).toFixed(1) + 'k' : labelVal.toFixed(0));
-                ctx.fillStyle = chartLabel;
-                ctx.font = "11px 'Inter', -apple-system, monospace";
-                ctx.textAlign = "left";
-                ctx.fillText(labelText, 8, y - 6);
-            }
-            ctx.stroke();
-            
-            // Line (bezier)
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = 3;
-            ctx.lineCap = "round";
-            ctx.beginPath();
-            ctx.moveTo(graphPts[0].x, graphPts[0].y);
-            for(let gi = 0; gi < graphPts.length - 1; gi++) {
-                const curr = graphPts[gi];
-                const next = graphPts[gi + 1];
-                const cpx = (curr.x + next.x) / 2;
-                ctx.bezierCurveTo(cpx, curr.y, cpx, next.y, next.x, next.y);
-            }
-            ctx.stroke();
-
-            // Fill
-            ctx.lineTo(graphPts[graphPts.length-1].x, h);
-            ctx.lineTo(graphPts[0].x, h);
-            ctx.fillStyle = fillGrad;
-            ctx.fill();
-            
-            // Points
-            points.forEach(pt => {
-                ctx.fillStyle = chartPointBg;
-                ctx.beginPath();
-                ctx.arc(pt.x,pt.y,6,0,Math.PI*2);
-                ctx.fill();
-                ctx.fillStyle = "#00FF87";
-                ctx.beginPath();
-                ctx.arc(pt.x,pt.y,4,0,Math.PI*2);
-                ctx.fill();
-            });
-
-            if(closest && minDist < 30) {
-                // Highlight point
-                ctx.strokeStyle = "#00FF87"; 
-                ctx.lineWidth = 2; 
-                ctx.beginPath(); 
-                ctx.arc(closest.x, closest.y, 10, 0, Math.PI*2); 
-                ctx.stroke();
-                
-                // Tooltip
-                const tooltipW = 140; 
-                const tooltipH = 50; 
-                let tx = closest.x - tooltipW/2; 
-                let ty = closest.y - tooltipH - 15;
-                if(tx < 5) tx = 5; 
-                if(tx + tooltipW > w) tx = w - tooltipW - 5; 
-                if(ty < 5) ty = closest.y + 20;
-                
-                ctx.fillStyle = chartTooltipBg;
-                ctx.beginPath();
-                ctx.roundRect(tx, ty, tooltipW, tooltipH, 8);
-                ctx.fill();
-                ctx.strokeStyle = isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.fillStyle = "#00FF87";
-                ctx.font = "bold 14px 'Inter', -apple-system, sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText("$" + closest.data.v.toLocaleString(), tx + tooltipW/2, ty + 22);
-                ctx.fillStyle = chartMuted;
-                ctx.font = "12px 'Inter', -apple-system, sans-serif";
-                ctx.fillText(closest.data.d, tx + tooltipW/2, ty + 40);
-            }
         };
+        c.onmouseleave = () => { tctx.clearRect(0, 0, w, h); };
     }
 
     function exportHistoryCSV() {
@@ -2832,7 +2889,7 @@
     function openScreen(id) { document.getElementById(id).classList.add('active'); }
     function closeScreen(id) { document.getElementById(id).classList.remove('active'); }
     function openSettings() { openScreen('screen-settings'); }
-    function toggleDebugPanel() { const d = document.getElementById('inpage-debug'); if(d) { d.style.display = d.style.display === 'none' ? 'block' : 'none'; showToast(d.style.display === 'none' ? 'Debug hidden' : 'Debug visible'); } }
+    function toggleDebugPanel() { const d = document.getElementById('inpage-debug'); if(d) { d.style.display = d.style.display === 'none' ? 'block' : 'none'; window._debugVisible = d.style.display !== 'none'; showToast(d.style.display === 'none' ? 'Debug hidden' : 'Debug visible'); } }
 
     /* -----------------------------
        Active Bets - OddsJam CSV Import
@@ -3576,7 +3633,7 @@
                 <div style="font-size:48px; margin-bottom:16px;"><i data-lucide="key-round" style="width:48px;height:48px;"></i></div>
                 <div style="font-size:14px;">Enter your API key above to load odds</div>
             </div>`;
-            if(window.lucide) lucide.createIcons();
+            if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
             return;
         }
         container.innerHTML = `<div style="padding:12px;color:#9CA3AF">Loading sports...</div>`;
@@ -3675,12 +3732,6 @@
             list.appendChild(card);
             card.querySelector('[data-load]').onclick = (e) => { e.stopPropagation(); loadEventMarkets(sportKey, idx); };
         });
-    }
-
-    function previewEvent(sportKey, idx) {
-        const ev = (window._oddsEvents && window._oddsEvents[sportKey] || [])[idx]; if(!ev) return alert('Event not found');
-        const content = document.getElementById('odds-content');
-        content.innerHTML = `<div style="padding:12px;"><div style="font-weight:800;font-size:18px">${ev.home} vs ${ev.away}</div><div style="color:#999;margin-top:6px">${new Date(ev.commence_time).toLocaleString()}</div><div style="margin-top:12px;color:#9CA3AF">This preview is minimal to save API credits. Click 'Load Markets' to fetch detailed markets for this event.</div><div style="margin-top:12px;"><button class="btn btn-secondary" onclick="renderEventsList('${sportKey}')">Back</button> <button class="btn btn-primary" onclick="loadEventMarkets('${sportKey}', ${idx})">Load Markets</button></div></div>`;
     }
 
     async function loadEventMarkets(sportKey, idx) {
@@ -3804,7 +3855,7 @@
        DESIGN UPGRADE v39 — New Features
     ======================================== */
 
-    // --- FLOATING PARTICLE SYSTEM ---
+    // --- FLOATING PARTICLE SYSTEM (Enhanced: dots + streaks + constellations) ---
     (function initParticles() {
         const canvas = document.getElementById('particle-canvas');
         if(!canvas) return;
@@ -3820,22 +3871,26 @@
         resize();
         window.addEventListener('resize', resize);
 
-        const PARTICLE_COUNT = 25;
+        const DOT_COUNT = 30;
+        const STREAK_COUNT = 12;
+        const CONNECTION_DIST = 120; // max distance for constellation lines
         const colors = [
             { r: 0, g: 255, b: 135 },   // neon green
             { r: 191, g: 64, b: 255 },   // neon purple
             { r: 0, g: 204, b: 106 },    // mid green
             { r: 160, g: 80, b: 255 },   // light purple
+            { r: 0, g: 217, b: 255 },    // cyan
         ];
 
-        function createParticle() {
+        function createDot() {
             const col = colors[Math.floor(Math.random() * colors.length)];
             return {
+                type: 'dot',
                 x: Math.random() * w,
                 y: Math.random() * h,
                 size: Math.random() * 2.5 + 1,
-                speedX: (Math.random() - 0.5) * 0.3,
-                speedY: (Math.random() - 0.5) * 0.25 - 0.1,
+                speedX: (Math.random() - 0.5) * 0.35,
+                speedY: (Math.random() - 0.5) * 0.3 - 0.08,
                 opacity: Math.random() * 0.4 + 0.1,
                 targetOpacity: Math.random() * 0.5 + 0.15,
                 fadeSpeed: 0.002 + Math.random() * 0.004,
@@ -3846,26 +3901,43 @@
             };
         }
 
-        for(let i = 0; i < PARTICLE_COUNT; i++) {
-            particles.push(createParticle());
+        function createStreak() {
+            const col = colors[Math.floor(Math.random() * colors.length)];
+            const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1); // diagonal
+            return {
+                type: 'streak',
+                x: Math.random() * w,
+                y: Math.random() * h,
+                length: Math.random() * 20 + 10,
+                thickness: Math.random() * 1.2 + 0.4,
+                angle: angle,
+                speedX: Math.cos(angle) * (0.15 + Math.random() * 0.25),
+                speedY: Math.sin(angle) * (0.15 + Math.random() * 0.25) - 0.15,
+                opacity: Math.random() * 0.25 + 0.05,
+                targetOpacity: Math.random() * 0.35 + 0.1,
+                fadeSpeed: 0.001 + Math.random() * 0.003,
+                fadingIn: Math.random() > 0.5,
+                r: col.r, g: col.g, b: col.b,
+                pulse: Math.random() * Math.PI * 2,
+                pulseSpeed: 0.005 + Math.random() * 0.01,
+            };
         }
+
+        for(let i = 0; i < DOT_COUNT; i++) particles.push(createDot());
+        for(let i = 0; i < STREAK_COUNT; i++) particles.push(createStreak());
 
         function animate() {
             ctx.clearRect(0, 0, w, h);
 
             const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            const opacityMult = isLight ? 0.4 : 1;
+            const opacityMult = isLight ? 0.35 : 1;
 
+            // Update positions and opacities
             particles.forEach(p => {
-                // Move
                 p.x += p.speedX;
                 p.y += p.speedY;
-
-                // Twinkle
                 p.pulse += p.pulseSpeed;
-                const pulseFactor = 0.7 + Math.sin(p.pulse) * 0.3;
 
-                // Fade in/out
                 if(p.fadingIn) {
                     p.opacity += p.fadeSpeed;
                     if(p.opacity >= p.targetOpacity) { p.fadingIn = false; }
@@ -3873,39 +3945,76 @@
                     p.opacity -= p.fadeSpeed;
                     if(p.opacity <= 0.05) {
                         p.fadingIn = true;
-                        p.targetOpacity = Math.random() * 0.5 + 0.15;
+                        p.targetOpacity = p.type === 'dot' ? Math.random() * 0.5 + 0.15 : Math.random() * 0.35 + 0.1;
                     }
                 }
 
-                // Wrap around edges
-                if(p.x < -10) p.x = w + 10;
-                if(p.x > w + 10) p.x = -10;
-                if(p.y < -10) p.y = h + 10;
-                if(p.y > h + 10) p.y = -10;
+                if(p.x < -30) p.x = w + 30;
+                if(p.x > w + 30) p.x = -30;
+                if(p.y < -30) p.y = h + 30;
+                if(p.y > h + 30) p.y = -30;
+            });
 
-                // Draw
+            // Draw constellation connection lines between nearby dots
+            const dots = particles.filter(p => p.type === 'dot');
+            ctx.lineWidth = 0.6;
+            for(let i = 0; i < dots.length; i++) {
+                for(let j = i + 1; j < dots.length; j++) {
+                    const dx = dots[i].x - dots[j].x;
+                    const dy = dots[i].y - dots[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if(dist < CONNECTION_DIST) {
+                        const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
+                        const avgR = (dots[i].r + dots[j].r) >> 1;
+                        const avgG = (dots[i].g + dots[j].g) >> 1;
+                        const avgB = (dots[i].b + dots[j].b) >> 1;
+                        ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
+                        ctx.beginPath();
+                        ctx.moveTo(dots[i].x, dots[i].y);
+                        ctx.lineTo(dots[j].x, dots[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw particles
+            particles.forEach(p => {
+                const pulseFactor = 0.7 + Math.sin(p.pulse) * 0.3;
                 const finalOpacity = p.opacity * pulseFactor * opacityMult;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
-                ctx.fill();
 
-                // Soft glow
-                if(p.size > 1.5) {
+                if(p.type === 'dot') {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.08})`;
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
                     ctx.fill();
+
+                    // Glow halo
+                    if(p.size > 1.8) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.07})`;
+                        ctx.fill();
+                    }
+                } else {
+                    // Streak — small glowing diagonal line
+                    const dx = Math.cos(p.angle) * p.length * 0.5;
+                    const dy = Math.sin(p.angle) * p.length * 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x - dx, p.y - dy);
+                    ctx.lineTo(p.x + dx, p.y + dy);
+                    ctx.strokeStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
+                    ctx.lineWidth = p.thickness;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.lineWidth = 0.6; // Reset for connections
                 }
             });
 
             animId = requestAnimationFrame(animate);
         }
 
-        // Start with a slight delay so page loads first
         setTimeout(() => animate(), 500);
 
-        // Pause when tab is hidden to save battery
         document.addEventListener('visibilitychange', () => {
             if(document.hidden) {
                 cancelAnimationFrame(animId);
@@ -3931,6 +4040,14 @@
         setTimeout(() => element.classList.remove(direction), 400);
     }
 
+    // Debounced Lucide icon refresh — avoids re-scanning DOM on every call
+    let _lucideTimer = null;
+    function refreshIcons() {
+        if(_lucideTimer) return;
+        _lucideTimer = setTimeout(() => { _lucideTimer = null; if(window.lucide) lucide.createIcons(); }, 60);
+    }
+    window.refreshIcons = refreshIcons;
+
     // Wrap the original renderDashboard to add number animation
     const _origRenderDashboard = renderDashboard;
     renderDashboard = function() {
@@ -3947,8 +4064,7 @@
             }
             _prevTotalBalance = newVal;
         }
-        // Re-render Lucide icons after DOM update
-        if(window.lucide) setTimeout(() => lucide.createIcons(), 10);
+        refreshIcons();
     };
 
     // --- CONFETTI CELEBRATION ---
@@ -4066,14 +4182,14 @@
         const overlay = document.getElementById('onboarding-overlay');
         if(overlay) {
             overlay.classList.add('active');
-            if(window.lucide) lucide.createIcons();
+            if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
         }
     }
     function onboardingNext() {
         const step1 = document.getElementById('onboarding-step-1');
         const step2 = document.getElementById('onboarding-step-2');
         if(step1) step1.style.display = 'none';
-        if(step2) { step2.style.display = 'block'; if(window.lucide) lucide.createIcons(); }
+        if(step2) { step2.style.display = 'block'; if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons(); }
     }
     function closeOnboarding() {
         const overlay = document.getElementById('onboarding-overlay');
@@ -4100,7 +4216,7 @@
             btn.innerHTML = newTheme === 'light' ?
                 '<i data-lucide="moon" class="theme-toggle-icon"></i>' :
                 '<i data-lucide="sun" class="theme-toggle-icon"></i>';
-            if(window.lucide) lucide.createIcons();
+            if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
         }
         // Update chart colors
         if(document.getElementById('graph-view').style.display === 'block') {
@@ -4117,7 +4233,7 @@
                 const btn = document.getElementById('theme-toggle-btn');
                 if(btn) {
                     btn.innerHTML = '<i data-lucide="moon" class="theme-toggle-icon"></i>';
-                    if(window.lucide) lucide.createIcons();
+                    if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
                 }
             });
         }
@@ -4145,7 +4261,7 @@
     const _origShowTab = showTab;
     showTab = function(t) {
         _origShowTab(t);
-        if(window.lucide) setTimeout(() => lucide.createIcons(), 50);
+        refreshIcons();
     };
 </script>
 </body>
