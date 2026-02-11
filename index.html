@@ -641,6 +641,16 @@
             <div class="bets-type-tab" data-type="arb" onclick="filterBetType('arb')">⚖️ Arb</div>
             <div class="bets-type-tab" data-type="freebet" onclick="filterBetType('freebet')">🎁 Free</div>
         </div>
+        <div style="padding: 12px 20px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border);">
+            <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">📅 Date:</label>
+            <input type="date" id="date-from" onchange="filterByDate()" 
+                   style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 13px;">
+            <span style="color: var(--text-muted);">to</span>
+            <input type="date" id="date-to" onchange="filterByDate()" 
+                   style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 13px;">
+            <button onclick="clearDateFilter()" 
+                    style="padding: 8px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer;">Clear</button>
+        </div>
         <div id="bets-list"></div>
         <div id="bets-summary" class="bets-summary"></div>
     </div>
@@ -1680,6 +1690,8 @@
     let activeBets = JSON.parse(localStorage.getItem('activeBets') || '[]');
     let currentBetFilter = 'pending';
     let currentBetTypeFilter = 'all';
+    let dateFrom = null;
+    let dateTo = null;
     
     function importOddsJamCSV(input) {
         const file = input.files[0];
@@ -1898,11 +1910,26 @@
         }
     }
     
-    function deleteBet(betId) {
+    async function deleteBet(betId) {
         activeBets = activeBets.filter(b => b.id !== betId);
         localStorage.setItem('activeBets', JSON.stringify(activeBets));
+        await saveBetsToFirestore();
         renderActiveBets();
         showToast('Bet deleted');
+    }
+    
+    function filterByDate() {
+        dateFrom = document.getElementById('date-from').value;
+        dateTo = document.getElementById('date-to').value;
+        renderActiveBets();
+    }
+    
+    function clearDateFilter() {
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        dateFrom = null;
+        dateTo = null;
+        renderActiveBets();
     }
     
     function renderActiveBets() {
@@ -1923,6 +1950,17 @@
         // Apply type filter
         if(currentBetTypeFilter !== 'all') {
             bets = bets.filter(b => b.type === currentBetTypeFilter);
+        }
+        
+        // Apply date filter
+        if(dateFrom || dateTo) {
+            bets = bets.filter(b => {
+                if(!b.date) return false;
+                const betDate = new Date(b.date).toISOString().split('T')[0];
+                if(dateFrom && betDate < dateFrom) return false;
+                if(dateTo && betDate > dateTo) return false;
+                return true;
+            });
         }
         
         if(bets.length === 0) {

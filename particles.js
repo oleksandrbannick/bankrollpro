@@ -10,11 +10,11 @@ class BankrollParticles {
         this.particles = [];
         this.animationId = null;
         this.colors = {
-            primary: '#58a6ff',
-            success: '#3fb950',
-            warning: '#d29922',
-            gold: '#FFD700',
-            purple: '#a371f7'
+            primary: '#00ff87',
+            success: '#00ff87',
+            warning: '#ffd700',
+            gold: '#00ff87',
+            purple: '#b944ff'
         };
     }
 
