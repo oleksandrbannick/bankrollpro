@@ -54,7 +54,7 @@ body {
 }
 
 /* Ensure content is above particles */
-body > *:not(#particles-canvas):not(.screen) {
+body > *:not(#particles-canvas):not(.screen):not(.bottom-nav):not(#toast) {
     position: relative;
     z-index: 1;
 }
