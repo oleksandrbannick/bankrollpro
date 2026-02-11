@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bankroll Pro v38.2.0</title>
+<title>Bankroll Pro v39.0.0</title>
 <!-- PWA Meta Tags -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,10 +11,6 @@
 <meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true">
 <link rel="icon" href="https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true" type="image/png">
-<!-- External Styles -->
-<link rel="stylesheet" href="styles.css">
-<!-- Animated Particles -->
-<script src="particles.js" defer></script>
 <script>
 (function(){
     const iconUrl = "https://github.com/oleksandrbannick/bankrollpro/blob/main/bankrollproicon.png?raw=true";
@@ -93,8 +89,9 @@
       sessionStorage.removeItem('factoryResetInProgress');
       console.log('Factory reset in progress, skipping Firestore load');
       if (user) {
-        document.getElementById('auth-btn').innerText = '🚪';
+        document.getElementById('auth-btn').innerHTML = '<i data-lucide="log-out"></i>';
         document.getElementById('auth-btn').onclick = () => signOutUser();
+        if(window.lucide) lucide.createIcons();
       }
       return;
     }
@@ -114,16 +111,18 @@
         console.log('Auth state fired but not a new sign-in, skipping Firestore load');
       }
 
-      document.getElementById('auth-btn').innerText = '🚪'; // Sign out icon
+      document.getElementById('auth-btn').innerHTML = '<i data-lucide="log-out"></i>';
       document.getElementById('auth-btn').onclick = () => signOutUser();
+      if(window.lucide) lucide.createIcons();
     } else {
       // User signed out: Reset session flags so next sign-in loads fresh
       hasLoadedForSession = false;
       lastKnownUserId = null;
       activeBets = [];
       renderActiveBets();
-      document.getElementById('auth-btn').innerText = '🔐';
+      document.getElementById('auth-btn').innerHTML = '<i data-lucide="lock"></i>';
       document.getElementById('auth-btn').onclick = () => toggleAuthModal();
+      if(window.lucide) lucide.createIcons();
       showToast('Signed out - Local data preserved');
     }
   });
@@ -349,8 +348,1044 @@
     }
   };
 </script>
+<!-- Inter Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+<style>
+    /* --- THEME: MIDNIGHT FINANCE --- */
+    :root {
+        --bg: #000000;
+        --bg-gradient: linear-gradient(180deg, #0a1628 0%, #000000 40%);
+        --surface: rgba(13, 17, 23, 0.8);
+        --surface-solid: #0d1117;
+        --surface-elevated: rgba(22, 27, 34, 0.85);
+        --surface-hover: rgba(28, 33, 40, 0.9);
+        --glass: rgba(13, 17, 23, 0.6);
+        --glass-border: rgba(255,255,255,0.06);
+        --border: rgba(255,255,255,0.08);
+        --border-focus: rgba(88, 166, 255, 0.4);
+
+        --primary: #58a6ff;
+        --primary-bg: rgba(88, 166, 255, 0.15);
+
+        --success: #3fb950;
+        --success-bg: rgba(63, 185, 80, 0.15);
+
+        --warning: #d29922;
+        --warning-bg: rgba(210, 153, 34, 0.15);
+
+        --danger: #f85149;
+        --danger-bg: rgba(248, 81, 73, 0.15);
+
+        --purple: #a371f7;
+        --purple-bg: rgba(163, 113, 247, 0.15);
+
+        --text: #f0f6fc;
+        --text-secondary: #8b949e;
+        --text-muted: #484f58;
+
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --radius-xl: 24px;
+        --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-medium: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-bounce: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* --- LIGHT THEME --- */
+    [data-theme="light"] {
+        --bg: #f6f8fa;
+        --bg-gradient: linear-gradient(180deg, #e8edf3 0%, #f6f8fa 40%);
+        --surface: rgba(255, 255, 255, 0.85);
+        --surface-solid: #ffffff;
+        --surface-elevated: rgba(255, 255, 255, 0.92);
+        --surface-hover: rgba(240, 243, 247, 0.95);
+        --glass: rgba(255, 255, 255, 0.65);
+        --glass-border: rgba(0,0,0,0.06);
+        --border: rgba(0,0,0,0.1);
+        --border-focus: rgba(88, 166, 255, 0.5);
+        --primary: #0969da;
+        --primary-bg: rgba(9, 105, 218, 0.12);
+        --success: #1a7f37;
+        --success-bg: rgba(26, 127, 55, 0.12);
+        --warning: #9a6700;
+        --warning-bg: rgba(154, 103, 0, 0.12);
+        --danger: #cf222e;
+        --danger-bg: rgba(207, 34, 46, 0.12);
+        --purple: #8250df;
+        --purple-bg: rgba(130, 80, 223, 0.12);
+        --text: #1f2328;
+        --text-secondary: #656d76;
+        --text-muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+
+    body {
+        background: var(--bg);
+        background-image: var(--bg-gradient);
+        color: var(--text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+        min-height: 100vh;
+        padding-bottom: 100px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* --- HERO SECTION --- */
+    .hero-section {
+        padding: 20px 20px 24px 20px;
+        background: linear-gradient(180deg, rgba(88, 166, 255, 0.08) 0%, transparent 100%);
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .hero-top-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 32px;
+    }
+    
+    .hero-logo {
+        font-size: 18px; font-weight: 700; color: var(--text);
+        display: flex; align-items: center; gap: 8px;
+    }
+    
+    .hero-actions { display: flex; gap: 8px; }
+    
+    .hero-icon-btn {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: var(--surface); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; cursor: pointer; transition: all 0.2s;
+    }
+    .hero-icon-btn:hover { background: var(--surface-hover); transform: scale(1.05); }
+    
+    .hero-balance { text-align: center; margin-bottom: 28px; }
+    
+    .hero-balance-label {
+        font-size: 13px; color: var(--text-secondary); font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .hero-balance-amount {
+        font-size: 56px; font-weight: 800; color: var(--text);
+        letter-spacing: -3px; line-height: 1;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+        transition: color var(--transition-medium);
+    }
+    
+    .hero-change {
+        display: inline-flex; align-items: center; gap: 6px;
+        margin-top: 12px; padding: 6px 14px;
+        background: var(--success-bg); color: var(--success);
+        border-radius: 20px; font-size: 14px; font-weight: 600;
+    }
+    .hero-change.negative { background: var(--danger-bg); color: var(--danger); }
+    
+    .hero-stats {
+        display: flex; justify-content: center; align-items: center;
+        gap: 0; background: var(--glass);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-radius: 16px; padding: 16px 8px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    }
+    
+    .hero-stat {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 0 12px;
+    }
+    
+    .hero-stat-icon { font-size: 20px; }
+    
+    .hero-stat-info { display: flex; flex-direction: column; }
+    
+    .hero-stat-value {
+        font-size: 16px; font-weight: 700; color: var(--text);
+        font-family: "SF Mono", monospace;
+    }
+    .hero-stat-value.bonus { color: var(--warning); }
+    .hero-stat-value.pos { color: var(--success); }
+    .hero-stat-value.neg { color: var(--danger); }
+    
+    .hero-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    
+    .hero-stat-divider { width: 1px; height: 36px; background: var(--border); }
+    
+    .blur-text { filter: blur(16px); opacity: 0.3; user-select: none; }
+
+    /* --- QUICK ACTIONS --- */
+    .quick-actions {
+        display: flex; gap: 12px; padding: 20px;
+    }
+    
+    .quick-action-btn {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+        padding: 16px 20px; border-radius: 14px;
+        font-size: 15px; font-weight: 600; cursor: pointer;
+        border: none; transition: all 0.2s;
+    }
+    .quick-action-btn.primary {
+        background: var(--primary); color: #000;
+    }
+    .quick-action-btn.primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(88,166,255,0.3); }
+    .quick-action-btn:active { transform: scale(0.96); transition: transform 0.1s; }
+    .quick-action-btn.success {
+        background: var(--surface); color: var(--success);
+        border: 1px solid var(--success);
+    }
+    .quick-action-btn.success:hover { background: var(--success-bg); }
+    
+    .quick-action-icon { font-size: 16px; }
+
+    /* --- SECTION HEADER --- */
+    .section-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0 4px; margin-bottom: 16px;
+    }
+    
+    .section-title {
+        font-size: 20px; font-weight: 700; color: var(--text);
+        margin: 0;
+    }
+    
+    .section-count {
+        background: var(--surface); color: var(--text-secondary);
+        padding: 4px 12px; border-radius: 12px;
+        font-size: 13px; font-weight: 600;
+        border: 1px solid var(--border);
+    }
+
+    /* --- CONTENT AREA --- */
+    #main-content { padding: 0 20px 20px 20px; }
+    
+    /* --- BOOK GROUPS --- */
+    .book-group {
+        margin-bottom: 24px;
+    }
+    
+    .book-header { 
+        display: flex; align-items: center; gap: 12px; 
+        margin: 20px 0 10px 0; padding: 0 4px;
+    }
+    
+    .book-logo-link {
+        width: 32px; height: 32px; 
+        border-radius: 8px; overflow: hidden; 
+        background: var(--surface-elevated);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .book-logo-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .book-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
+    
+    /* --- ACCOUNT CARDS --- */
+    .card {
+        background: var(--glass);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-left: 3px solid var(--card-accent, var(--primary));
+        border-radius: var(--radius-md); padding: 0; margin-bottom: 8px;
+        overflow: hidden; cursor: pointer;
+        transition: all var(--transition-medium);
+        position: relative;
+    }
+    .card:hover { background: var(--surface-hover); border-color: var(--border-focus); border-left-color: var(--card-accent, var(--primary)); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .card:active { transform: scale(0.98); transition: transform 0.1s; }
+    
+    .card-inner {
+        display: flex; align-items: center; padding: 18px 20px;
+    }
+    
+    .card-color-bar {
+        width: 4px; height: 100%; position: absolute; left: 0; top: 0;
+        background: var(--card-accent, var(--primary));
+    }
+    
+    .card-left { flex: 1; }
+    
+    .card-nick { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .card-book-name { font-size: 12px; color: var(--text-muted); }
+    
+    .card-right { text-align: right; }
+    
+    .card-cash { font-size: 22px; font-weight: 700; color: var(--text); font-family: "SF Mono", monospace; }
+    
+    .card-badges { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+    
+    .card-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 4px 10px; border-radius: 8px;
+        font-size: 12px; font-weight: 600;
+    }
+    .card-badge.stake { background: var(--purple-bg); color: var(--purple); }
+    .card-badge.bonus { background: var(--warning-bg); color: var(--warning); }
+
+    /* --- BOTTOM NAV --- */
+    .bottom-nav {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        display: flex; justify-content: space-around;
+        padding: 8px 16px calc(env(safe-area-inset-bottom, 8px) + 8px) 16px;
+        background: var(--glass);
+        backdrop-filter: blur(24px) saturate(1.8); -webkit-backdrop-filter: blur(24px) saturate(1.8);
+        border-top: 1px solid var(--glass-border);
+        z-index: 100;
+    }
+    [data-theme="light"] .bottom-nav { background: rgba(255,255,255,0.8); }
+    
+    .nav-item {
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+        padding: 8px 18px; border-radius: 12px;
+        cursor: pointer; transition: all var(--transition-medium);
+        color: var(--text-muted);
+    }
+    .nav-item:hover { color: var(--text-secondary); }
+    .nav-item.active { color: var(--primary); background: var(--primary-bg); }
+    .nav-item:active { transform: scale(0.9); transition: transform 0.1s; }
+
+    .nav-icon { font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    .nav-icon svg { width: 22px; height: 22px; stroke-width: 2; }
+    .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+
+    /* --- CALCULATORS --- */
+    #calc-view { display: none; }
+    .calc-section-title { 
+        font-size: 14px; font-weight: 600; color: var(--text-secondary); 
+        margin: 24px 0 12px 0; 
+        display: flex; align-items: center; gap: 8px;
+    }
+    .calc-box {
+        background: var(--glass); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--radius-md); padding: 20px; margin-bottom: 16px;
+        transition: all var(--transition-medium);
+    }
+    .calc-screen { 
+        background: var(--bg); border-radius: 14px; 
+        padding: 20px; margin-bottom: 18px; 
+        border: 1px solid var(--border); 
+    }
+    .calc-display-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .calc-main-val { font-size: 42px; font-weight: 700; color: var(--success); text-align: right; font-family: "SF Mono", monospace; }
+    .profit-pill-container { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .profit-pill { background: var(--success-bg); color: var(--success); padding: 6px 14px; border-radius: 10px; font-size: 14px; font-weight: 700; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .calc-input { 
+        flex: 1; background: var(--surface-elevated); border: 1px solid var(--border); 
+        border-radius: 10px; padding: 12px 10px; color: var(--text); 
+        font-size: 14px; text-align: center; font-weight: 500;
+        transition: all 0.2s; min-width: 0; width: 100%;
+        box-sizing: border-box;
+    }
+    .calc-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-bg); }
+    .calc-input::placeholder { color: var(--text-muted); font-size: 13px; }
+    
+    /* Mobile-friendly input groups */
+    .input-group-inline {
+        display: flex; gap: 10px; margin-bottom: 12px;
+    }
+    .input-half {
+        flex: 1; min-width: 0;
+    }
+    .input-half label {
+        display: block; font-size: 10px; color: var(--text-muted); 
+        font-weight: 600; margin-bottom: 6px; margin-left: 2px;
+    }
+    .input-half .calc-input {
+        width: 100%;
+    }
+    
+    /* --- ACTIVE BETS VIEW --- */
+    .bets-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .bets-filter-tabs {
+        display: flex; gap: 8px; padding: 12px 20px 8px;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .bets-filter {
+        padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+        background: var(--surface); color: var(--text-secondary); cursor: pointer;
+        white-space: nowrap; transition: all 0.2s;
+    }
+    .bets-filter.active { background: var(--primary); color: #000; }
+    .bets-filter:hover:not(.active) { background: var(--surface-hover); }
+    
+    .bets-type-tabs {
+        display: flex; gap: 6px; padding: 0 20px 12px;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        border-bottom: 1px solid var(--border);
+    }
+    .bets-type-tab {
+        padding: 6px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;
+        background: transparent; color: var(--text-muted); cursor: pointer;
+        white-space: nowrap; transition: all 0.2s; border: 1px solid var(--border);
+    }
+    .bets-type-tab.active { background: var(--surface-elevated); color: var(--text); border-color: var(--text-muted); }
+    .bets-type-tab:hover:not(.active) { border-color: var(--text-muted); }
+    
+    #bets-list { padding: 12px 16px 16px; }
+    
+    .bet-card {
+        background: var(--glass); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden;
+        transition: all var(--transition-medium);
+    }
+    .bet-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+    .bet-card-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 14px; border-bottom: 1px solid var(--border);
+        background: var(--surface-elevated);
+    }
+    .bet-type-badge {
+        padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+    }
+    .bet-type-badge.ev { background: var(--primary-bg); color: var(--primary); }
+    .bet-type-badge.arb { background: var(--success-bg); color: var(--success); }
+    .bet-type-badge.freebet { background: var(--warning-bg); color: var(--warning); }
+    
+    .bet-status-badge {
+        padding: 4px 8px; border-radius: 10px; font-size: 10px; font-weight: 700;
+    }
+    .bet-status-badge.status-won { background: var(--success-bg); color: var(--success); }
+    .bet-status-badge.status-lost { background: var(--danger-bg); color: var(--danger); }
+    .bet-status-badge.status-pending { background: var(--surface); color: var(--text-muted); }
+    
+    .bet-card.status-won { border-left: 3px solid var(--success); }
+    .bet-card.status-lost { border-left: 3px solid var(--danger); opacity: 0.7; }
+    .bet-card.status-pending { border-left: 3px solid var(--primary); }
+    
+    .bet-card-body { padding: 14px; }
+    .bet-selection { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .bet-event { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+    .bet-details { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .bet-detail { font-size: 12px; color: var(--text-muted); }
+    .bet-detail span { color: var(--text); font-weight: 600; }
+    .bet-ev { color: var(--success) !important; }
+    
+    .bet-actions {
+        display: flex; gap: 8px; padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+    .bet-action-btn {
+        flex: 1; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+        border: none; cursor: pointer; transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .bet-action-btn.won { background: var(--success-bg); color: var(--success); }
+    .bet-action-btn.won:hover { background: var(--success); color: #000; }
+    .bet-action-btn.lost { background: var(--danger-bg); color: var(--danger); }
+    .bet-action-btn.lost:hover { background: var(--danger); color: #fff; }
+    .bet-action-btn.delete { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .bet-action-btn.delete:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    
+    .bets-summary {
+        margin: 16px; padding: 16px; background: var(--surface-elevated);
+        border-radius: 12px; border: 1px solid var(--border);
+    }
+    .bets-summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .bets-summary-row:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 8px; }
+    
+    /* Paired bets container */
+    .bet-pair-container {
+        background: var(--surface-elevated);
+        border: 2px solid var(--primary);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .bet-pair-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: var(--primary-bg);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .bet-pair-cards {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+    }
+    .bet-pair-profit {
+        padding: 12px 14px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+    }
+    .pair-profit-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .pair-profit-row:last-child {
+        margin-bottom: 0;
+    }
+    @media (max-width: 600px) {
+        .bet-pair-cards {
+            flex-direction: column;
+        }
+    }
+    .bet-pair-cards .bet-card {
+        margin-bottom: 0;
+    }
+    
+    /* Pairing mode */
+    .bet-card.pairing-source {
+        border: 2px solid var(--warning) !important;
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+    }
+    .bet-card.pairing-target {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .bet-card.pairing-target:hover {
+        border-color: var(--primary);
+        background: var(--primary-bg);
+    }
+    
+    .bets-empty {
+        text-align: center; padding: 60px 20px; color: var(--text-muted);
+    }
+    .bets-empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .bets-empty-text { font-size: 14px; margin-bottom: 20px; }
+    
+    /* Clickable odds cells */
+    .odds-cell.clickable {
+        cursor: pointer; transition: all 0.15s;
+    }
+    .odds-cell.clickable:hover {
+        background: var(--primary-bg); transform: scale(1.02);
+    }
+    .odds-cell.clickable:active {
+        transform: scale(0.98);
+    }
+
+    /* --- GRAPH --- */
+    #graph-view { display: none; padding: 20px; }
+    
+    .graph-header {
+        margin-bottom: 20px;
+    }
+    
+    .graph-stats {
+        display: flex;
+        gap: 16px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+    
+    .graph-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .graph-stat-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .graph-stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        font-family: "SF Mono", monospace;
+    }
+    
+    .graph-stat-value.positive { color: var(--success); }
+    .graph-stat-value.negative { color: var(--danger); }
+    
+    .graph-filters {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: var(--surface);
+        border-radius: 12px;
+        overflow-x: auto;
+    }
+    
+    .graph-filter-btn {
+        padding: 8px 20px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .graph-filter-btn:hover {
+        background: var(--surface-hover);
+        color: var(--text);
+    }
+    
+    .graph-filter-btn.active {
+        background: var(--primary);
+        color: #000;
+        border-color: var(--primary);
+    }
+    
+    /* graph-canvas-wrapper styled in new CSS block below */
+    
+    #growthCanvas { 
+        width: 100%; 
+        height: 320px; 
+        border-radius: 12px;
+    }
+    
+    .graph-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .hidden { display: none !important; }
+
+    /* Hide old nav bar, we use bottom-nav now */
+    .nav-bar { display: none !important; }
+    
+    .btn { 
+        flex: 1; padding: 16px; border-radius: 14px; 
+        font-size: 14px; font-weight: 600; 
+        border: none; cursor: pointer; transition: all 0.2s; 
+    }
+    .btn-primary { background: var(--primary); color: #000; }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--surface-hover); color: var(--text); }
+    .btn-lock { background: var(--success); color: #000; font-weight: 700; }
+    .btn-icon { flex: 0; padding: 16px 20px; }
+
+    /* --- SCREENS (Bottom Sheet Modals) --- */
+    .screen-backdrop {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+        z-index: 199; opacity: 0; pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .screen-backdrop.active { opacity: 1; pointer-events: auto; }
+    .screen {
+        position: fixed; left: 0; right: 0; bottom: 0;
+        top: 6vh;
+        background: var(--surface-solid); z-index: 200;
+        display: flex; flex-direction: column;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        pointer-events: none;
+        box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+    }
+    .screen.active { transform: translateY(0); pointer-events: auto; }
+    .screen-header {
+        padding: 20px; border-bottom: 1px solid var(--border);
+        text-align: center; background: var(--surface-solid);
+        position: relative;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+    .screen-header::before {
+        content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+        width: 36px; height: 4px; border-radius: 2px; background: var(--text-muted); opacity: 0.4;
+    }
+    .screen-title { font-size: 17px; font-weight: 700; color: var(--text); }
+    .screen-close {
+        position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--surface-hover); border: none;
+        color: var(--text-secondary); font-size: 18px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .screen-content { flex: 1; overflow-y: auto; padding: 24px 20px; padding-bottom: 120px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    .input-group { margin-bottom: 20px; }
+    .input-group label { 
+        display: block; font-size: 12px; font-weight: 600; 
+        color: var(--text-secondary); 
+        margin-bottom: 8px; 
+    }
+    .input-group input, .input-group select { 
+        width: 100%; background: var(--surface); 
+        border: 1px solid var(--border); border-radius: 12px; 
+        padding: 16px; color: var(--text); font-size: 16px; 
+        transition: all 0.2s;
+    }
+    .input-group input:focus, .input-group select:focus { 
+        border-color: var(--primary); 
+        box-shadow: 0 0 0 3px var(--primary-bg); 
+        outline: none;
+    }
+
+    /* --- SETTINGS --- */
+    .settings-group {
+        background: var(--glass); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;
+    }
+    .plus-btn { 
+        width: 40px; height: 40px; border-radius: 12px; 
+        background: var(--primary); color: #000; 
+        font-size: 22px; font-weight: 600; 
+        display: flex; align-items: center; justify-content: center; 
+        cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .plus-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+    /* --- TOAST --- */
+    .toast {
+        position: fixed; bottom: 100px; left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--glass); color: var(--text);
+        backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5);
+        padding: 14px 28px; border-radius: var(--radius-md);
+        font-size: 14px; font-weight: 600;
+        opacity: 0; transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        z-index: 300;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* --- ODDS --- */
+    .odds-header { 
+        display: flex; align-items: center; gap: 12px; 
+        padding: 14px; background: var(--surface); 
+        border: 1px solid var(--border);
+        border-radius: 14px; margin-bottom: 14px; 
+    }
+    .odds-sport-select { 
+        flex: 1; background: var(--surface-elevated); border: 1px solid var(--border); 
+        border-radius: 10px; padding: 14px 16px; color: var(--text); 
+        font-size: 14px; font-weight: 600; cursor: pointer; 
+    }
+    .odds-sport-select:focus { border-color: var(--primary); outline: none; }
+    .odds-refresh-btn { 
+        background: var(--primary); border: none; 
+        border-radius: 10px; padding: 14px 20px; 
+        color: #000; font-weight: 700; font-size: 13px; 
+        cursor: pointer; transition: all 0.2s; 
+    }
+    .odds-refresh-btn:hover { filter: brightness(1.1); }
+    
+    .odds-event-card {
+        background: var(--glass); border: 1px solid var(--glass-border);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden;
+        transition: all var(--transition-medium);
+    }
+    .odds-event-header { 
+        display: flex; justify-content: space-between; align-items: center; 
+        padding: 16px 18px; 
+        border-bottom: 1px solid var(--border); 
+    }
+    .odds-event-teams { font-weight: 700; font-size: 15px; color: var(--text); }
+    .odds-event-time { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .odds-event-actions { display: flex; gap: 8px; }
+    .odds-btn { 
+        padding: 10px 16px; border-radius: 10px; 
+        font-size: 12px; font-weight: 700; 
+        cursor: pointer; transition: all 0.2s; border: none; 
+    }
+    .odds-btn-secondary { background: var(--surface-elevated); color: var(--text-secondary); }
+    .odds-btn-secondary:hover { color: var(--text); }
+    .odds-btn-primary { background: var(--success); color: #000; }
+    .odds-btn-primary:hover { filter: brightness(1.1); }
+    
+    .odds-grid { display: grid; gap: 1px; background: var(--border); border-radius: 0 0 14px 14px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; min-width: 100%; }
+    .odds-grid-header { display: contents; }
+    .odds-grid-header > div { 
+        background: var(--surface-elevated); padding: 12px 10px; 
+        font-size: 10px; font-weight: 700; color: var(--text-muted); 
+        text-transform: uppercase; text-align: center; 
+    }
+    .odds-grid-row { display: contents; }
+    .odds-grid-row > div { 
+        background: var(--surface); padding: 14px 10px; 
+        text-align: center; display: flex; flex-direction: column; 
+        align-items: center; justify-content: center; 
+    }
+    .odds-team-cell { font-weight: 600; font-size: 13px; color: var(--text); text-align: left !important; align-items: flex-start !important; padding-left: 16px !important; }
+    .odds-cell { cursor: pointer; transition: all 0.15s; }
+    .odds-cell:hover { background: var(--primary-bg); }
+    .odds-price { font-size: 15px; font-weight: 700; color: var(--success); }
+    .odds-price.negative { color: var(--danger); }
+    .odds-price.positive { color: var(--success); }
+    .odds-point { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .odds-empty { color: var(--text-muted); font-size: 12px; }
+    
+    .market-tabs { display: flex; gap: 8px; padding: 14px 18px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+    .market-tab { 
+        padding: 10px 18px; border-radius: 10px; 
+        font-size: 13px; font-weight: 600; 
+        cursor: pointer; white-space: nowrap; transition: all 0.2s; 
+        background: var(--surface-elevated); color: var(--text-muted); 
+        border: 1px solid var(--border); 
+    }
+    .market-tab:hover { color: var(--text); }
+    .market-tab.active { background: var(--primary); color: #000; border-color: transparent; }
+    
+    .odds-back-btn { 
+        display: inline-flex; align-items: center; gap: 8px; 
+        padding: 12px 18px; background: var(--surface); 
+        border: 1px solid var(--border); border-radius: 10px; 
+        color: var(--text-secondary); font-size: 13px; font-weight: 600; 
+        cursor: pointer; margin-bottom: 18px; transition: all 0.2s; 
+    }
+    .odds-back-btn:hover { color: var(--text); }
+    
+    .odds-api-setup {
+        margin: 16px;
+        padding: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+
+    /* --- SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    /* Hide quick actions on non-dash tabs */
+    body.hide-quick-actions .quick-actions { display: none; }
+    body.hide-quick-actions .hero-section { padding-bottom: 20px; }
+
+    /* --- SKELETON LOADING --- */
+    @keyframes skeleton-pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+    }
+    .skeleton {
+        background: linear-gradient(90deg, var(--surface-solid) 25%, var(--surface-hover) 50%, var(--surface-solid) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+        border-radius: var(--radius-sm);
+    }
+    .skeleton-card {
+        height: 72px; margin-bottom: 8px; border-radius: var(--radius-md);
+    }
+    .skeleton-hero {
+        height: 60px; width: 200px; margin: 0 auto 12px; border-radius: var(--radius-sm);
+    }
+    .skeleton-stat {
+        height: 40px; flex: 1; border-radius: var(--radius-sm);
+    }
+
+    /* --- NUMBER ANIMATION --- */
+    .number-animate {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+    .number-animate.tick-up { animation: tickUp 0.4s ease; }
+    .number-animate.tick-down { animation: tickDown 0.4s ease; }
+    @keyframes tickUp {
+        0% { transform: translateY(8px); opacity: 0.3; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes tickDown {
+        0% { transform: translateY(-8px); opacity: 0.3; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* --- PULL TO REFRESH --- */
+    .ptr-container {
+        position: fixed; top: 0; left: 0; right: 0;
+        height: 60px; z-index: 50;
+        display: flex; align-items: center; justify-content: center;
+        transform: translateY(-60px); transition: transform 0.3s ease;
+        pointer-events: none;
+    }
+    .ptr-container.pulling { transform: translateY(0); }
+    .ptr-spinner {
+        width: 28px; height: 28px;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+    }
+    .ptr-spinner.spinning { animation: ptr-spin 0.8s linear infinite; }
+    @keyframes ptr-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* --- ONBOARDING OVERLAY --- */
+    .onboarding-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+        z-index: 500; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.4s ease;
+    }
+    .onboarding-overlay.active { opacity: 1; pointer-events: auto; }
+    .onboarding-card {
+        background: var(--surface-solid); border-radius: var(--radius-xl);
+        padding: 40px 32px; max-width: 340px; width: 90%;
+        text-align: center; border: 1px solid var(--border);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .onboarding-overlay.active .onboarding-card { transform: scale(1); }
+    .onboarding-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
+    .onboarding-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; line-height: 1.5; }
+    .onboarding-features { text-align: left; margin-bottom: 32px; }
+    .onboarding-feature {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 0; border-bottom: 1px solid var(--border);
+        font-size: 14px; color: var(--text);
+    }
+    .onboarding-feature:last-child { border-bottom: none; }
+    .onboarding-feature-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .onboarding-dots {
+        display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
+    }
+    .onboarding-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--text-muted); transition: all 0.3s;
+    }
+    .onboarding-dot.active {
+        background: var(--primary); width: 24px; border-radius: 4px;
+    }
+    .onboarding-btn {
+        width: 100%; padding: 16px; border-radius: var(--radius-md);
+        background: var(--primary); color: #000; font-weight: 700;
+        font-size: 16px; border: none; cursor: pointer;
+        transition: all var(--transition-medium);
+    }
+    .onboarding-btn:hover { filter: brightness(1.1); }
+    .onboarding-skip {
+        background: none; border: none; color: var(--text-muted);
+        font-size: 13px; cursor: pointer; margin-top: 16px; font-weight: 500;
+    }
+
+    /* --- CONFETTI CANVAS --- */
+    #confetti-canvas {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 400; pointer-events: none;
+    }
+
+    /* --- THEME TOGGLE --- */
+    .theme-toggle-icon { transition: transform 0.3s ease; }
+    [data-theme="light"] .theme-toggle-icon { transform: rotate(180deg); }
+
+    /* --- HERO ICON LUCIDE --- */
+    .hero-icon-btn svg { width: 18px; height: 18px; stroke-width: 2; }
+    .hero-icon-btn { transition: all var(--transition-medium); }
+    .hero-icon-btn:active { transform: scale(0.9); }
+
+    /* --- GRAPH CANVAS GLASS --- */
+    .graph-canvas-wrapper {
+        background: var(--glass);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 16px; margin-bottom: 16px;
+    }
+
+    /* --- LUCIDE NAV ICON SIZING --- */
+    .hero-stat-icon { font-size: 20px; display: flex; align-items: center; }
+    .hero-stat-icon svg { width: 20px; height: 20px; stroke-width: 2; }
+    .quick-action-icon { display: flex; align-items: center; }
+    .quick-action-icon svg { width: 16px; height: 16px; stroke-width: 2.5; }
+
+    /* --- SMOOTH ALL TRANSITIONS --- */
+    .hero-section, .calc-screen, .bets-summary, .graph-filters, .odds-header,
+    .bets-filter, .bets-type-tab, .graph-filter-btn, .btn, .odds-btn {
+        transition: all var(--transition-medium);
+    }
+    .bets-filter:active, .bets-type-tab:active, .graph-filter-btn:active,
+    .btn:active, .odds-btn:active { transform: scale(0.95); transition: transform 0.1s; }
+</style>
 </head>
 <body>
+
+<!-- Pull to Refresh Indicator -->
+<div class="ptr-container" id="ptr-container">
+    <div class="ptr-spinner" id="ptr-spinner"></div>
+</div>
+
+<!-- Confetti Canvas -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- Onboarding Overlay -->
+<div class="onboarding-overlay" id="onboarding-overlay">
+    <div class="onboarding-card">
+        <div id="onboarding-step-1">
+            <div style="font-size:48px; margin-bottom:16px;">
+                <svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="obGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00D9FF"/><stop offset="50%" style="stop-color:#3B82F6"/><stop offset="100%" style="stop-color:#8B5CF6"/></linearGradient></defs>
+                    <circle cx="50" cy="50" r="46" fill="url(#obGrad)" opacity="0.15"/><circle cx="50" cy="50" r="46" stroke="url(#obGrad)" stroke-width="3" fill="none" opacity="0.6"/>
+                    <path d="M 28 25 L 28 75 L 50 75 Q 70 75 70 60 Q 70 50 55 48 Q 68 46 68 35 Q 68 25 50 25 Z M 38 33 L 48 33 Q 56 33 56 38 Q 56 44 48 44 L 38 44 Z M 38 52 L 50 52 Q 60 52 60 60 Q 60 67 50 67 L 38 67 Z" fill="url(#obGrad)"/>
+                </svg>
+            </div>
+            <div class="onboarding-title">Welcome to Bankroll Pro</div>
+            <div class="onboarding-subtitle">The smartest way to track your sports betting bankroll across all sportsbooks.</div>
+            <div class="onboarding-features">
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--primary-bg); color:var(--primary);"><i data-lucide="wallet" style="width:18px;height:18px;"></i></div>
+                    <span>Track balances across 27+ sportsbooks</span>
+                </div>
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--success-bg); color:var(--success);"><i data-lucide="calculator" style="width:18px;height:18px;"></i></div>
+                    <span>Kelly, Arbitrage & Free Bet calculators</span>
+                </div>
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--purple-bg); color:var(--purple);"><i data-lucide="trending-up" style="width:18px;height:18px;"></i></div>
+                    <span>Growth chart to visualize your progress</span>
+                </div>
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--warning-bg); color:var(--warning);"><i data-lucide="ticket" style="width:18px;height:18px;"></i></div>
+                    <span>Import & track active bets from OddsJam</span>
+                </div>
+            </div>
+            <div class="onboarding-dots">
+                <div class="onboarding-dot active"></div>
+                <div class="onboarding-dot"></div>
+            </div>
+            <button class="onboarding-btn" onclick="onboardingNext()">Get Started</button>
+            <button class="onboarding-skip" onclick="closeOnboarding()">Skip intro</button>
+        </div>
+        <div id="onboarding-step-2" style="display:none;">
+            <div style="font-size:48px; margin-bottom:16px;"><i data-lucide="rocket" style="width:48px;height:48px;color:var(--primary);"></i></div>
+            <div class="onboarding-title">Quick Tips</div>
+            <div class="onboarding-subtitle">Here's how to get the most out of Bankroll Pro</div>
+            <div class="onboarding-features">
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--primary-bg); color:var(--primary);"><i data-lucide="plus" style="width:18px;height:18px;"></i></div>
+                    <span><strong>Add Account</strong> to start tracking a sportsbook</span>
+                </div>
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--success-bg); color:var(--success);"><i data-lucide="lock" style="width:18px;height:18px;"></i></div>
+                    <span><strong>Lock Day</strong> saves your daily snapshot to the growth chart</span>
+                </div>
+                <div class="onboarding-feature">
+                    <div class="onboarding-feature-icon" style="background:var(--warning-bg); color:var(--warning);"><i data-lucide="cloud" style="width:18px;height:18px;"></i></div>
+                    <span><strong>Sign in</strong> to sync your data across devices</span>
+                </div>
+            </div>
+            <div class="onboarding-dots">
+                <div class="onboarding-dot"></div>
+                <div class="onboarding-dot active"></div>
+            </div>
+            <button class="onboarding-btn" onclick="closeOnboarding()">Let's Go!</button>
+        </div>
+    </div>
+</div>
 
 <!-- Auth Modal -->
 <div id="auth-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
@@ -426,9 +1461,10 @@
             <span>Bankroll Pro</span>
         </div>
         <div class="hero-actions">
-            <div id="auth-btn" class="hero-icon-btn" onclick="toggleAuthModal()">🔐</div>
-            <div class="hero-icon-btn" onclick="togglePrivacy()">👁</div>
-            <div class="hero-icon-btn" onclick="openSettings()">⚙️</div>
+            <div id="auth-btn" class="hero-icon-btn" onclick="toggleAuthModal()"><i data-lucide="lock"></i></div>
+            <div class="hero-icon-btn" onclick="togglePrivacy()"><i data-lucide="eye"></i></div>
+            <div class="hero-icon-btn" id="theme-toggle-btn" onclick="toggleTheme()"><i data-lucide="sun" class="theme-toggle-icon"></i></div>
+            <div class="hero-icon-btn" onclick="openSettings()"><i data-lucide="settings"></i></div>
         </div>
     </div>
     <div class="hero-balance">
@@ -438,7 +1474,7 @@
     </div>
     <div class="hero-stats">
         <div class="hero-stat">
-            <div class="hero-stat-icon">🎯</div>
+            <div class="hero-stat-icon"><i data-lucide="crosshair"></i></div>
             <div class="hero-stat-info">
                 <span class="hero-stat-value" id="dash-stake">$0</span>
                 <span class="hero-stat-label">In Play</span>
@@ -446,7 +1482,7 @@
         </div>
         <div class="hero-stat-divider"></div>
         <div class="hero-stat">
-            <div class="hero-stat-icon">🎁</div>
+            <div class="hero-stat-icon"><i data-lucide="gift"></i></div>
             <div class="hero-stat-info">
                 <span class="hero-stat-value bonus" id="dash-bonus">$0</span>
                 <span class="hero-stat-label">Bonus</span>
@@ -454,7 +1490,7 @@
         </div>
         <div class="hero-stat-divider"></div>
         <div class="hero-stat">
-            <div class="hero-stat-icon">📊</div>
+            <div class="hero-stat-icon"><i data-lucide="bar-chart-2"></i></div>
             <div class="hero-stat-info">
                 <span class="hero-stat-value" id="dash-day">+$0</span>
                 <span class="hero-stat-label">Day P/L</span>
@@ -466,11 +1502,11 @@
 <!-- Quick Actions -->
 <div class="quick-actions" id="quick-actions">
     <button class="quick-action-btn primary" onclick="openBookManager()">
-        <span class="quick-action-icon">➕</span>
+        <span class="quick-action-icon"><i data-lucide="plus"></i></span>
         <span>Add Account</span>
     </button>
     <button class="quick-action-btn success" onclick="confirmDay()">
-        <span class="quick-action-icon">🔒</span>
+        <span class="quick-action-icon"><i data-lucide="lock"></i></span>
         <span>Lock Day</span>
     </button>
 </div>
@@ -484,8 +1520,8 @@
         <div id="card-list"></div>
     </div>
     
-    <div id="calc-view" class="hidden">
-        <div class="calc-section-title">🎯 Active Bet Calculator (Kelly)</div>
+    <div id="calc-view">
+        <div class="calc-section-title"><i data-lucide="crosshair" style="width:16px;height:16px;"></i> Active Bet Calculator (Kelly)</div>
         <div class="calc-box" style="border-color: var(--primary);">
             <div class="calc-screen">
                 <span class="calc-display-label">RECOMMENDED STAKE</span>
@@ -503,7 +1539,7 @@
             <input type="range" id="kelly-slider" min="0" max="1" step="0.01" value="0.25" style="width:100%; accent-color:var(--primary);" oninput="runKelly()">
         </div>
 
-        <div class="calc-section-title">⚖️ Arbitrage Calculator</div>
+        <div class="calc-section-title"><i data-lucide="scale" style="width:16px;height:16px;"></i> Arbitrage Calculator</div>
         <div class="calc-box" style="border-color: var(--success);">
             <div class="calc-screen">
                 <span class="calc-display-label">GUARANTEED PROFIT</span>
@@ -540,7 +1576,7 @@
             </div>
         </div>
 
-        <div class="calc-section-title">🎁 Free Bet Converter</div>
+        <div class="calc-section-title"><i data-lucide="gift" style="width:16px;height:16px;"></i> Free Bet Converter</div>
         <div class="calc-box" style="border-color: var(--warning);">
             <div class="calc-screen">
                 <span class="calc-display-label">HEDGE STAKE (CASH)</span>
@@ -641,16 +1677,6 @@
             <div class="bets-type-tab" data-type="arb" onclick="filterBetType('arb')">⚖️ Arb</div>
             <div class="bets-type-tab" data-type="freebet" onclick="filterBetType('freebet')">🎁 Free</div>
         </div>
-        <div style="padding: 12px 20px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border);">
-            <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">📅 Date:</label>
-            <input type="date" id="date-from" onchange="filterByDate()" 
-                   style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 13px;">
-            <span style="color: var(--text-muted);">to</span>
-            <input type="date" id="date-to" onchange="filterByDate()" 
-                   style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-elevated); color: var(--text); font-size: 13px;">
-            <button onclick="clearDateFilter()" 
-                    style="padding: 8px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer;">Clear</button>
-        </div>
         <div id="bets-list"></div>
         <div id="bets-summary" class="bets-summary"></div>
     </div>
@@ -677,23 +1703,23 @@
 <!-- Bottom Navigation -->
 <div class="bottom-nav">
     <div id="nav-dash" class="nav-item active" onclick="showTab('dash')">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon"><i data-lucide="home"></i></span>
         <span class="nav-label">Home</span>
     </div>
     <div id="nav-calc" class="nav-item" onclick="showTab('calc')">
-        <span class="nav-icon">🧮</span>
+        <span class="nav-icon"><i data-lucide="calculator"></i></span>
         <span class="nav-label">Calc</span>
     </div>
     <div id="nav-bets" class="nav-item" onclick="showTab('bets')">
-        <span class="nav-icon">🎫</span>
+        <span class="nav-icon"><i data-lucide="ticket"></i></span>
         <span class="nav-label">Bets</span>
     </div>
     <div id="nav-graph" class="nav-item" onclick="showTab('graph')">
-        <span class="nav-icon">📈</span>
+        <span class="nav-icon"><i data-lucide="trending-up"></i></span>
         <span class="nav-label">Growth</span>
     </div>
     <div id="nav-odds" class="nav-item" onclick="showTab('odds')">
-        <span class="nav-icon">🎰</span>
+        <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
         <span class="nav-label">Odds</span>
     </div>
 </div>
@@ -743,7 +1769,7 @@
         
         <button class="btn btn-secondary" style="width:100%; margin-top:16px; border-color:var(--danger); color:var(--danger);" onclick="factoryReset()">⚠️ Factory Reset</button>
         
-        <div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:32px; font-weight:500;">Bankroll Pro v38.2.0</div>
+        <div style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:32px; font-weight:500;">Bankroll Pro v39.0.0</div>
     </div>
 </div>
 
@@ -1344,8 +2370,14 @@
             // Ensure data reference stays in sync
             data = window.data;
             await saveData();
-            
-            showToast("Locked 🔒");
+
+            // Check if day was profitable and launch confetti
+            const prevTotal = window.data.graphData.length >= 2 ? window.data.graphData[window.data.graphData.length - 2].v : t;
+            if(t > prevTotal && window.launchConfetti) {
+                window.launchConfetti();
+            }
+
+            showToast("Locked!");
         }
     }
 
@@ -1369,10 +2401,18 @@
         const w = c.width = c.parentElement.offsetWidth; 
         const h = c.height = 320;
 
-        ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,w,h); 
-        
-        if(pts.length < 2) { 
-            ctx.fillStyle = "#8b949e"; 
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const chartBg = isLight ? '#ffffff' : '#0d1117';
+        const chartMuted = isLight ? '#656d76' : '#8b949e';
+        const chartGrid = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+        const chartLabel = isLight ? '#8b949e' : '#484f58';
+        const chartTooltipBg = isLight ? '#f6f8fa' : '#161b22';
+        const chartPointBg = isLight ? '#ffffff' : '#0d1117';
+
+        ctx.fillStyle = chartBg; ctx.fillRect(0,0,w,h);
+
+        if(pts.length < 2) {
+            ctx.fillStyle = chartMuted; 
             ctx.font = "14px sans-serif"; 
             ctx.textAlign = "center"; 
             ctx.fillText("Lock Day 2+ times to see your curve.", w/2, h/2); 
@@ -1426,65 +2466,73 @@
         const pMax = max + pad;
         
         // Draw grid lines with better formatting
-        ctx.strokeStyle = "rgba(255,255,255,0.06)"; 
-        ctx.lineWidth = 1; 
+        ctx.strokeStyle = chartGrid;
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        for(let i=0; i<=5; i++) { 
-            const y = h - ((i/5) * h); 
-            ctx.moveTo(0, y); 
-            ctx.lineTo(w, y); 
+        for(let i=0; i<=5; i++) {
+            const y = h - ((i/5) * h);
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
             const labelVal = pMin + (i/5)*(pMax-pMin);
             const labelText = '$' + (labelVal >= 1000 ? (labelVal/1000).toFixed(1) + 'k' : labelVal.toFixed(0));
-            ctx.fillStyle = "#484f58"; 
-            ctx.font = "11px -apple-system, monospace"; 
-            ctx.textAlign = "left"; 
-            ctx.fillText(labelText, 8, y - 6); 
-        } 
+            ctx.fillStyle = chartLabel;
+            ctx.font = "11px 'Inter', -apple-system, monospace";
+            ctx.textAlign = "left";
+            ctx.fillText(labelText, 8, y - 6);
+        }
         ctx.stroke();
 
         // Draw gradient line
         const grad = ctx.createLinearGradient(0, 0, w, 0); 
         grad.addColorStop(0, "#58a6ff"); 
         grad.addColorStop(1, "#3fb950");
-        ctx.strokeStyle = grad; 
-        ctx.lineWidth = 3; 
-        ctx.lineJoin = "round"; 
-        ctx.lineCap = "round"; 
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 3;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
         ctx.beginPath();
-        
+
         // Add padding so first and last points are fully visible
         const padding = 20;
         const graphWidth = w - (padding * 2);
         const step = graphWidth / (pts.length - 1);
-        
-        pts.forEach((p, i) => { 
-            const x = padding + (i * step); 
-            const y = h - ((p.v - pMin)/(pMax - pMin)) * h; 
-            if(i===0) ctx.moveTo(x,y); 
-            else ctx.lineTo(x,y); 
-        }); 
+
+        // Bezier curve interpolation for smooth lines
+        const graphPts = pts.map((p, i) => ({
+            x: padding + (i * step),
+            y: h - ((p.v - pMin)/(pMax - pMin)) * h
+        }));
+
+        ctx.moveTo(graphPts[0].x, graphPts[0].y);
+        for(let i = 0; i < graphPts.length - 1; i++) {
+            const curr = graphPts[i];
+            const next = graphPts[i + 1];
+            const cpx = (curr.x + next.x) / 2;
+            ctx.bezierCurveTo(cpx, curr.y, cpx, next.y, next.x, next.y);
+        }
         ctx.stroke();
 
-        // Fill area under curve
-        ctx.lineTo(w - padding, h); 
-        ctx.lineTo(padding, h); 
-        const fillGrad = ctx.createLinearGradient(0, 0, 0, h); 
-        fillGrad.addColorStop(0, "rgba(63, 185, 80, 0.15)"); 
+        // Fill area under curve with richer gradient
+        ctx.lineTo(graphPts[graphPts.length-1].x, h);
+        ctx.lineTo(graphPts[0].x, h);
+        const fillGrad = ctx.createLinearGradient(0, 0, 0, h);
+        fillGrad.addColorStop(0, "rgba(63, 185, 80, 0.25)");
+        fillGrad.addColorStop(0.5, "rgba(88, 166, 255, 0.08)");
         fillGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = fillGrad; 
+        ctx.fillStyle = fillGrad;
         ctx.fill();
 
         // Draw data points
         const points = pts.map((p, i) => {
-            const x = padding + (i * step); 
+            const x = padding + (i * step);
             const y = h - ((p.v - pMin)/(pMax - pMin)) * h;
-            ctx.fillStyle = "#0d1117"; 
-            ctx.beginPath(); 
-            ctx.arc(x,y,6,0,Math.PI*2); 
-            ctx.fill(); 
-            ctx.fillStyle = "#3fb950"; 
-            ctx.beginPath(); 
-            ctx.arc(x,y,4,0,Math.PI*2); 
+            ctx.fillStyle = chartPointBg;
+            ctx.beginPath();
+            ctx.arc(x,y,6,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#3fb950";
+            ctx.beginPath();
+            ctx.arc(x,y,4,0,Math.PI*2);
             ctx.fill();
             return {x,y,data:p};
         });
@@ -1508,55 +2556,56 @@
             
             // Redraw base
             ctx.clearRect(0,0,w,h);
-            ctx.fillStyle = "#0d1117"; 
+            ctx.fillStyle = chartBg;
             ctx.fillRect(0,0,w,h);
-            
+
             // Grid
-            ctx.strokeStyle = "rgba(255,255,255,0.06)"; 
-            ctx.lineWidth = 1; 
+            ctx.strokeStyle = chartGrid;
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            for(let i=0; i<=5; i++) { 
-                const y = h - ((i/5) * h); 
-                ctx.moveTo(0, y); 
-                ctx.lineTo(w, y); 
+            for(let i=0; i<=5; i++) {
+                const y = h - ((i/5) * h);
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
                 const labelVal = pMin + (i/5)*(pMax-pMin);
                 const labelText = '$' + (labelVal >= 1000 ? (labelVal/1000).toFixed(1) + 'k' : labelVal.toFixed(0));
-                ctx.fillStyle = "#484f58"; 
-                ctx.font = "11px -apple-system, monospace"; 
-                ctx.textAlign = "left"; 
-                ctx.fillText(labelText, 8, y - 6); 
-            } 
+                ctx.fillStyle = chartLabel;
+                ctx.font = "11px 'Inter', -apple-system, monospace";
+                ctx.textAlign = "left";
+                ctx.fillText(labelText, 8, y - 6);
+            }
             ctx.stroke();
             
-            // Line
-            ctx.strokeStyle = grad; 
-            ctx.lineWidth = 3; 
-            ctx.lineCap = "round"; 
-            ctx.beginPath(); 
-            pts.forEach((p, i) => { 
-                const x = padding + (i * step); 
-                const y = h - ((p.v - pMin)/(pMax - pMin)) * h; 
-                if(i===0) ctx.moveTo(x,y); 
-                else ctx.lineTo(x,y); 
-            }); 
+            // Line (bezier)
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(graphPts[0].x, graphPts[0].y);
+            for(let gi = 0; gi < graphPts.length - 1; gi++) {
+                const curr = graphPts[gi];
+                const next = graphPts[gi + 1];
+                const cpx = (curr.x + next.x) / 2;
+                ctx.bezierCurveTo(cpx, curr.y, cpx, next.y, next.x, next.y);
+            }
             ctx.stroke();
-            
+
             // Fill
-            ctx.lineTo(w - padding, h); 
-            ctx.lineTo(padding, h); 
-            ctx.fillStyle = fillGrad; 
+            ctx.lineTo(graphPts[graphPts.length-1].x, h);
+            ctx.lineTo(graphPts[0].x, h);
+            ctx.fillStyle = fillGrad;
             ctx.fill();
             
             // Points
-            points.forEach(pt => { 
-                ctx.fillStyle = "#0d1117"; 
-                ctx.beginPath(); 
-                ctx.arc(pt.x,pt.y,6,0,Math.PI*2); 
-                ctx.fill(); 
-                ctx.fillStyle = "#3fb950"; 
-                ctx.beginPath(); 
-                ctx.arc(pt.x,pt.y,4,0,Math.PI*2); 
-                ctx.fill(); 
+            points.forEach(pt => {
+                ctx.fillStyle = chartPointBg;
+                ctx.beginPath();
+                ctx.arc(pt.x,pt.y,6,0,Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#3fb950";
+                ctx.beginPath();
+                ctx.arc(pt.x,pt.y,4,0,Math.PI*2);
+                ctx.fill();
             });
 
             if(closest && minDist < 30) {
@@ -1576,19 +2625,19 @@
                 if(tx + tooltipW > w) tx = w - tooltipW - 5; 
                 if(ty < 5) ty = closest.y + 20;
                 
-                ctx.fillStyle = "#161b22"; 
-                ctx.beginPath(); 
-                ctx.roundRect(tx, ty, tooltipW, tooltipH, 8); 
+                ctx.fillStyle = chartTooltipBg;
+                ctx.beginPath();
+                ctx.roundRect(tx, ty, tooltipW, tooltipH, 8);
                 ctx.fill();
-                ctx.strokeStyle = "rgba(255,255,255,0.1)"; 
-                ctx.lineWidth = 1; 
+                ctx.strokeStyle = isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+                ctx.lineWidth = 1;
                 ctx.stroke();
-                ctx.fillStyle = "#3fb950"; 
-                ctx.font = "bold 14px -apple-system, sans-serif"; 
-                ctx.textAlign = "center"; 
+                ctx.fillStyle = "#3fb950";
+                ctx.font = "bold 14px 'Inter', -apple-system, sans-serif";
+                ctx.textAlign = "center";
                 ctx.fillText("$" + closest.data.v.toLocaleString(), tx + tooltipW/2, ty + 22);
-                ctx.fillStyle = "#8b949e"; 
-                ctx.font = "12px -apple-system, sans-serif"; 
+                ctx.fillStyle = chartMuted;
+                ctx.font = "12px 'Inter', -apple-system, sans-serif";
                 ctx.fillText(closest.data.d, tx + tooltipW/2, ty + 40);
             }
         };
@@ -1690,8 +2739,6 @@
     let activeBets = JSON.parse(localStorage.getItem('activeBets') || '[]');
     let currentBetFilter = 'pending';
     let currentBetTypeFilter = 'all';
-    let dateFrom = null;
-    let dateTo = null;
     
     function importOddsJamCSV(input) {
         const file = input.files[0];
@@ -1910,26 +2957,11 @@
         }
     }
     
-    async function deleteBet(betId) {
+    function deleteBet(betId) {
         activeBets = activeBets.filter(b => b.id !== betId);
         localStorage.setItem('activeBets', JSON.stringify(activeBets));
-        await saveBetsToFirestore();
         renderActiveBets();
         showToast('Bet deleted');
-    }
-    
-    function filterByDate() {
-        dateFrom = document.getElementById('date-from').value;
-        dateTo = document.getElementById('date-to').value;
-        renderActiveBets();
-    }
-    
-    function clearDateFilter() {
-        document.getElementById('date-from').value = '';
-        document.getElementById('date-to').value = '';
-        dateFrom = null;
-        dateTo = null;
-        renderActiveBets();
     }
     
     function renderActiveBets() {
@@ -1950,17 +2982,6 @@
         // Apply type filter
         if(currentBetTypeFilter !== 'all') {
             bets = bets.filter(b => b.type === currentBetTypeFilter);
-        }
-        
-        // Apply date filter
-        if(dateFrom || dateTo) {
-            bets = bets.filter(b => {
-                if(!b.date) return false;
-                const betDate = new Date(b.date).toISOString().split('T')[0];
-                if(dateFrom && betDate < dateFrom) return false;
-                if(dateTo && betDate > dateTo) return false;
-                return true;
-            });
         }
         
         if(bets.length === 0) {
@@ -2657,10 +3678,242 @@
         }
     }
 
-    // Initialize particles animation on page load
-    window.addEventListener('DOMContentLoaded', () => {
-        const particles = new BankrollParticles();
+    /* ========================================
+       DESIGN UPGRADE v39 — New Features
+    ======================================== */
+
+    // --- ANIMATED NUMBER TRANSITIONS ---
+    let _prevTotalBalance = null;
+    function animateValue(element, newValue, prefix, suffix) {
+        if(!element) return;
+        const currentText = element.innerText;
+        const currentVal = parseFloat(currentText.replace(/[^0-9.\-]/g, '')) || 0;
+        if(Math.abs(currentVal - newValue) < 0.01) return;
+
+        const direction = newValue > currentVal ? 'tick-up' : 'tick-down';
+        element.classList.remove('tick-up', 'tick-down');
+        element.classList.add('number-animate', direction);
+        element.innerText = (prefix || '') + Math.abs(newValue).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + (suffix || '');
+
+        setTimeout(() => element.classList.remove(direction), 400);
+    }
+
+    // Wrap the original renderDashboard to add number animation
+    const _origRenderDashboard = renderDashboard;
+    renderDashboard = function() {
+        const prevTotal = _prevTotalBalance;
+        _origRenderDashboard();
+        // After render, animate the total balance
+        const totalEl = document.getElementById('dash-total');
+        if(totalEl) {
+            const newVal = parseFloat(totalEl.innerText.replace(/[^0-9.\-]/g, '')) || 0;
+            if(prevTotal !== null && Math.abs(prevTotal - newVal) > 0.01) {
+                const dir = newVal > prevTotal ? 'tick-up' : 'tick-down';
+                totalEl.classList.add('number-animate', dir);
+                setTimeout(() => totalEl.classList.remove(dir), 400);
+            }
+            _prevTotalBalance = newVal;
+        }
+        // Re-render Lucide icons after DOM update
+        if(window.lucide) setTimeout(() => lucide.createIcons(), 10);
+    };
+
+    // --- CONFETTI CELEBRATION ---
+    window.launchConfetti = function() {
+        const canvas = document.getElementById('confetti-canvas');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ['#3fb950', '#58a6ff', '#d29922', '#a371f7', '#f85149', '#00D9FF', '#FFD700'];
+        const particles = [];
+        for(let i = 0; i < 120; i++) {
+            particles.push({
+                x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+                y: canvas.height / 2,
+                vx: (Math.random() - 0.5) * 16,
+                vy: (Math.random() - 1) * 18 - 4,
+                w: Math.random() * 10 + 4,
+                h: Math.random() * 6 + 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 12,
+                gravity: 0.25 + Math.random() * 0.15,
+                opacity: 1,
+                decay: 0.008 + Math.random() * 0.008
+            });
+        }
+
+        let frame = 0;
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let alive = false;
+            particles.forEach(p => {
+                if(p.opacity <= 0) return;
+                alive = true;
+                p.x += p.vx;
+                p.vy += p.gravity;
+                p.y += p.vy;
+                p.vx *= 0.98;
+                p.rotation += p.rotSpeed;
+                p.opacity -= p.decay;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.globalAlpha = Math.max(0, p.opacity);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx.restore();
+            });
+            frame++;
+            if(alive && frame < 200) requestAnimationFrame(animate);
+            else ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        animate();
+    };
+
+    // --- PULL TO REFRESH ---
+    (function() {
+        let touchStartY = 0;
+        let pulling = false;
+        const threshold = 80;
+
+        document.addEventListener('touchstart', function(e) {
+            if(window.scrollY === 0) {
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if(touchStartY === 0) return;
+            const dy = e.touches[0].clientY - touchStartY;
+            if(dy > 20 && window.scrollY === 0) {
+                pulling = true;
+                const ptrEl = document.getElementById('ptr-container');
+                if(ptrEl) {
+                    const progress = Math.min(dy / threshold, 1);
+                    ptrEl.style.transform = `translateY(${-60 + (60 * progress)}px)`;
+                    const spinner = document.getElementById('ptr-spinner');
+                    if(spinner) spinner.style.transform = `rotate(${progress * 360}deg)`;
+                }
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', function() {
+            if(pulling) {
+                const ptrEl = document.getElementById('ptr-container');
+                const spinner = document.getElementById('ptr-spinner');
+                const transform = ptrEl ? ptrEl.style.transform : '';
+                const currentOffset = parseFloat(transform.match(/translateY\(([^p]+)/)?.[1] || -60);
+
+                if(currentOffset >= -10) {
+                    // Trigger refresh
+                    if(spinner) spinner.classList.add('spinning');
+                    if(ptrEl) ptrEl.style.transform = 'translateY(0px)';
+                    renderDashboard();
+                    if(window.loadUserDataFromFirestore) window.loadUserDataFromFirestore();
+                    setTimeout(() => {
+                        if(ptrEl) ptrEl.style.transform = 'translateY(-60px)';
+                        if(spinner) spinner.classList.remove('spinning');
+                        showToast('Refreshed');
+                    }, 1200);
+                } else {
+                    if(ptrEl) ptrEl.style.transform = 'translateY(-60px)';
+                }
+            }
+            touchStartY = 0;
+            pulling = false;
+        }, { passive: true });
+    })();
+
+    // --- ONBOARDING FLOW ---
+    function showOnboarding() {
+        const overlay = document.getElementById('onboarding-overlay');
+        if(overlay) {
+            overlay.classList.add('active');
+            if(window.lucide) lucide.createIcons();
+        }
+    }
+    function onboardingNext() {
+        const step1 = document.getElementById('onboarding-step-1');
+        const step2 = document.getElementById('onboarding-step-2');
+        if(step1) step1.style.display = 'none';
+        if(step2) { step2.style.display = 'block'; if(window.lucide) lucide.createIcons(); }
+    }
+    function closeOnboarding() {
+        const overlay = document.getElementById('onboarding-overlay');
+        if(overlay) overlay.classList.remove('active');
+        localStorage.setItem('bankroll_onboarding_done', '1');
+    }
+    // Check on load
+    document.addEventListener('DOMContentLoaded', function() {
+        if(!localStorage.getItem('bankroll_onboarding_done')) {
+            setTimeout(showOnboarding, 800);
+        }
     });
+
+    // --- LIGHT/DARK THEME TOGGLE ---
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const newTheme = current === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('bankroll_theme', newTheme);
+        // Update icon
+        const btn = document.getElementById('theme-toggle-btn');
+        if(btn) {
+            btn.innerHTML = newTheme === 'light' ?
+                '<i data-lucide="moon" class="theme-toggle-icon"></i>' :
+                '<i data-lucide="sun" class="theme-toggle-icon"></i>';
+            if(window.lucide) lucide.createIcons();
+        }
+        // Update chart colors
+        if(document.getElementById('graph-view').style.display === 'block') {
+            setTimeout(drawGraph, 50);
+        }
+        showToast(newTheme === 'light' ? 'Light mode' : 'Dark mode');
+    }
+    // Load saved theme
+    (function() {
+        const saved = localStorage.getItem('bankroll_theme');
+        if(saved === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.addEventListener('DOMContentLoaded', () => {
+                const btn = document.getElementById('theme-toggle-btn');
+                if(btn) {
+                    btn.innerHTML = '<i data-lucide="moon" class="theme-toggle-icon"></i>';
+                    if(window.lucide) lucide.createIcons();
+                }
+            });
+        }
+    })();
+
+    // --- SKELETON LOADING ---
+    function showSkeletonCards() {
+        const list = document.getElementById('card-list');
+        if(!list) return;
+        let html = '';
+        for(let i = 0; i < 4; i++) {
+            html += '<div class="skeleton skeleton-card"></div>';
+        }
+        list.innerHTML = html;
+    }
+
+    // --- INITIALIZE LUCIDE ICONS ---
+    document.addEventListener('DOMContentLoaded', function() {
+        if(window.lucide) {
+            lucide.createIcons();
+        }
+    });
+
+    // Re-init Lucide icons after dynamic content renders
+    const _origShowTab = showTab;
+    showTab = function(t) {
+        _origShowTab(t);
+        if(window.lucide) setTimeout(() => lucide.createIcons(), 50);
+    };
 </script>
 </body>
 </html>
