@@ -489,7 +489,6 @@
     .hero-stats {
         display: flex; justify-content: center; align-items: center;
         gap: 0; background: var(--glass);
-        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         border-radius: 16px; padding: 16px 8px;
         border: 1px solid var(--glass-border);
         box-shadow: 0 4px 24px rgba(0,0,0,0.15);
@@ -587,7 +586,6 @@
     /* --- ACCOUNT CARDS --- */
     .card {
         background: var(--glass);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         border-left: 3px solid var(--card-accent, var(--primary));
         border-radius: var(--radius-md); padding: 0; margin-bottom: 8px;
@@ -631,12 +629,12 @@
         position: fixed; bottom: 0; left: 0; right: 0;
         display: flex; justify-content: space-around;
         padding: 8px 16px calc(env(safe-area-inset-bottom, 8px) + 8px) 16px;
-        background: var(--glass);
-        backdrop-filter: blur(24px) saturate(1.8); -webkit-backdrop-filter: blur(24px) saturate(1.8);
+        background: rgba(13, 17, 23, 0.85);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         border-top: 1px solid var(--glass-border);
         z-index: 100;
     }
-    [data-theme="light"] .bottom-nav { background: rgba(255,255,255,0.8); }
+    [data-theme="light"] .bottom-nav { background: rgba(255,255,255,0.88); }
     
     .nav-item {
         display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -661,7 +659,6 @@
     }
     .calc-box {
         background: var(--glass); border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border-radius: var(--radius-md); padding: 20px; margin-bottom: 16px;
         transition: all var(--transition-medium);
     }
@@ -734,7 +731,6 @@
     
     .bet-card {
         background: var(--glass); border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden;
         transition: all var(--transition-medium);
     }
@@ -991,6 +987,7 @@
         transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
         pointer-events: none;
         box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+        will-change: transform;
     }
     .screen.active { transform: translateY(0); pointer-events: auto; }
     .screen-header {
@@ -1033,7 +1030,6 @@
     /* --- SETTINGS --- */
     .settings-group {
         background: var(--glass); border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;
     }
     .plus-btn { 
@@ -1049,8 +1045,8 @@
     .toast {
         position: fixed; bottom: 100px; left: 50%;
         transform: translateX(-50%) translateY(20px);
-        background: var(--glass); color: var(--text);
-        backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5);
+        background: rgba(13, 17, 23, 0.9); color: var(--text);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         padding: 14px 28px; border-radius: var(--radius-md);
         font-size: 14px; font-weight: 600;
         opacity: 0; transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
@@ -1083,7 +1079,6 @@
     
     .odds-event-card {
         background: var(--glass); border: 1px solid var(--glass-border);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden;
         transition: all var(--transition-medium);
     }
@@ -1194,7 +1189,8 @@
         animation-timing-function: ease-in-out;
         animation-iteration-count: infinite;
         animation-direction: alternate;
-        will-change: transform, opacity;
+        will-change: transform;
+        contain: layout style;
     }
     .ambient-orb.orb-1 {
         width: 350px; height: 350px;
@@ -1263,15 +1259,10 @@
     }
 
     /* Ensure content sits above ambient layers */
-    .hero-section, #main-content, .bottom-nav, .quick-actions,
-    .screen, .toast, .onboarding-overlay, #confetti-canvas {
+    /* Only set position:relative on flow elements; fixed elements keep their own position */
+    .hero-section, #main-content, .quick-actions {
         position: relative; z-index: 2;
     }
-    .bottom-nav { z-index: 100; }
-    .screen { z-index: 200; }
-    .toast { z-index: 300; }
-    #confetti-canvas { z-index: 400; }
-    .onboarding-overlay { z-index: 500; }
 
     /* --- NUMBER ANIMATION --- */
     .number-animate {
@@ -1381,7 +1372,6 @@
     /* --- GRAPH CANVAS GLASS --- */
     .graph-canvas-wrapper {
         background: var(--glass);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-lg);
         padding: 16px; margin-bottom: 16px;
@@ -3830,7 +3820,7 @@
         resize();
         window.addEventListener('resize', resize);
 
-        const PARTICLE_COUNT = 45;
+        const PARTICLE_COUNT = 25;
         const colors = [
             { r: 0, g: 255, b: 135 },   // neon green
             { r: 191, g: 64, b: 255 },   // neon purple
