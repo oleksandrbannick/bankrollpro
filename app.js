@@ -1008,6 +1008,9 @@ function importOddsJamCSV(input) {
                 // Get status
                 let status = getCol('status', 'pending').toLowerCase();
                 
+                // Get date - with fallback to current date if missing
+                let betDate = getCol('date', '');
+                
                 // Build event string
                 let event = getCol('event');
                 if(!event) {
@@ -1024,7 +1027,7 @@ function importOddsJamCSV(input) {
                     stake: stake,
                     ev: ev,
                     market: getCol('market', ''),
-                    date: getCol('date', ''),
+                    date: betDate,
                     payout: payout,
                     profit: profit,
                     status: status,
@@ -1329,7 +1332,7 @@ function renderActiveBets() {
                 <div class="bet-card-body">
                     <div class="bet-selection">${bet.selection}</div>
                     <div class="bet-event">${bet.event}${bet.market ? ' • ' + bet.market : ''}</div>
-                    ${bet.date ? `<div class="bet-date" style="font-size:11px; color:var(--text-muted); margin-top:2px;">📅 ${formatBetDate(bet.date)}</div>` : ''}
+                    ${bet.date ? `<div class="bet-date" style="font-size:12px; color:var(--text-secondary); margin-top:4px; font-weight:500;">📅 ${formatBetDate(bet.date)}</div>` : ''}
                     <div class="bet-details">
                         <div class="bet-detail">Odds: <span>${oddsDisplay}</span></div>
                         <div class="bet-detail">Stake: <span>$${bet.stake.toFixed(2)}</span></div>
