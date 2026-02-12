@@ -2152,8 +2152,8 @@ function renderEventsList(sportKey) {
         }
         card.innerHTML = `
             <div class="odds-event-header">
-                <div style="flex:1;">
-                    <div class="odds-event-teams" style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <div style="flex:1; margin-right:12px;">
+                    <div class="odds-event-teams" style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
                         ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:20px; height:20px; object-fit:contain;">` : ''}
                         <span>${ev.away}</span>
                         <span style="color:var(--text-muted); font-size:12px;">@</span>
