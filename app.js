@@ -2298,10 +2298,13 @@ async function loadEventMarkets(sportKey, idx) {
 (function initParticles() {
     const canvas = document.getElementById('particle-canvas');
     if(!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     let particles = [];
     let animId = null;
     let w, h;
+    let isScrolling = false;
+    let scrollTimeout = null;
+    let frameCount = 0;
 
     function resize() {
         w = canvas.width = window.innerWidth;
@@ -2309,7 +2312,14 @@ async function loadEventMarkets(sportKey, idx) {
     }
     resize();
     let _resizeTimer;
-    window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(resize, 150); });
+    window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(resize, 150); }, { passive: true });
+
+    // Detect scrolling to reduce calculations
+    window.addEventListener('scroll', () => {
+        isScrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => { isScrolling = false; }, 150);
+    }, { passive: true });
 
     const isMobile = window.innerWidth <= 768;
     const DOT_COUNT = isMobile ? 15 : 22;
@@ -2369,6 +2379,7 @@ async function loadEventMarkets(sportKey, idx) {
 
     function animate() {
         ctx.clearRect(0, 0, w, h);
+        frameCount++;
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         const opacityMult = isLight ? 0.35 : 1;
@@ -2396,35 +2407,30 @@ async function loadEventMarkets(sportKey, idx) {
             if(p.y > h + 30) p.y = -30;
         });
 
-        // Draw constellation connection lines between nearby dots (desktop only)
-        if(CONNECTION_DIST > 0) {
+        // Draw constellation connection lines (only when not scrolling and every 2nd frame)
+        if(CONNECTION_DIST > 0 && !isScrolling && frameCount % 2 === 0) {
             const dots = particles.filter(p => p.type === 'dot');
             ctx.lineWidth = 0.6;
-            // Batch path operations for better performance
-            const linesToDraw = [];
+            // Only check nearby particles using simple grid optimization
             for(let i = 0; i < dots.length; i++) {
-                for(let j = i + 1; j < dots.length; j++) {
+                for(let j = i + 1; j < Math.min(i + 5, dots.length); j++) { // Limit comparisons
                     const dx = dots[i].x - dots[j].x;
                     const dy = dots[i].y - dots[j].y;
                     const distSq = dx * dx + dy * dy;
                     if(distSq < CONNECTION_DIST * CONNECTION_DIST) {
                         const dist = Math.sqrt(distSq);
                         const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
-                        linesToDraw.push({i, j, lineOpacity});
+                        const avgR = (dots[i].r + dots[j].r) >> 1;
+                        const avgG = (dots[i].g + dots[j].g) >> 1;
+                        const avgB = (dots[i].b + dots[j].b) >> 1;
+                        ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
+                        ctx.beginPath();
+                        ctx.moveTo(dots[i].x, dots[i].y);
+                        ctx.lineTo(dots[j].x, dots[j].y);
+                        ctx.stroke();
                     }
                 }
             }
-            // Draw all lines in one pass
-            linesToDraw.forEach(({i, j, lineOpacity}) => {
-                const avgR = (dots[i].r + dots[j].r) >> 1;
-                const avgG = (dots[i].g + dots[j].g) >> 1;
-                const avgB = (dots[i].b + dots[j].b) >> 1;
-                ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
-                ctx.beginPath();
-                ctx.moveTo(dots[i].x, dots[i].y);
-                ctx.lineTo(dots[j].x, dots[j].y);
-                ctx.stroke();
-            });
         }
 
         // Draw particles

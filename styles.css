@@ -1023,7 +1023,9 @@ body.hide-quick-actions .hero-section { padding-bottom: 20px; }
 #particle-canvas {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     z-index: 1; pointer-events: none;
-    will-change: contents;
+    will-change: transform;
+    contain: strict;
+    content-visibility: auto;
 }
 
 /* --- MOBILE TWEAKS --- */
@@ -1250,7 +1252,8 @@ body.hide-quick-actions .hero-section { padding-bottom: 20px; }
 
 /* Optimize particles canvas */
 #particle-canvas {
-    will-change: contents;
+    will-change: transform;
+    contain: strict;
 }
 
 /* Only honor reduced motion for accessibility */
