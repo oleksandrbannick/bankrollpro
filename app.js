@@ -2146,11 +2146,11 @@ function renderEventsList(sportKey) {
             <div class="odds-event-header" style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border);">
                 <div style="flex:0 1 auto; min-width:0;">
                     <div class="odds-event-teams" style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                        ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:22px; height:22px; object-fit:contain; flex-shrink:0;">` : ''}
+                        ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">` : ''}
                         <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.away}</span>
                         <span style="color:var(--text-muted); font-size:12px; flex-shrink:0;">@</span>
                         <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.home}</span>
-                        ${getTeamLogo(ev.home) ? `<img src="${getTeamLogo(ev.home)}" alt="${ev.home}" style="width:22px; height:22px; object-fit:contain; flex-shrink:0;">` : ''}
+                        ${getTeamLogo(ev.home) ? `<img src="${getTeamLogo(ev.home)}" alt="${ev.home}" style="width:24px; height:24px; object-fit:contain; flex-shrink:0;">` : ''}
                     </div>
                     <div class="odds-event-time">📅 ${time}</div>
                 </div>
