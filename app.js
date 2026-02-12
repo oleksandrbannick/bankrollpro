@@ -1025,20 +1025,8 @@ async function updateLiveScores() {
     const pendingBets = activeBets.filter(b => b.status === 'pending');
     if(pendingBets.length === 0) return;
     
-    // Detect sports from bet events (basic detection)
-    const sportsToCheck = new Set();
-    pendingBets.forEach(bet => {
-        const event = (bet.event || '').toUpperCase();
-        if(event.includes('NBA') || event.includes('LAKERS') || event.includes('WARRIORS')) sportsToCheck.add('NBA');
-        if(event.includes('NFL') || event.includes('CHIEFS') || event.includes('EAGLES')) sportsToCheck.add('NFL');
-        if(event.includes('MLB') || event.includes('YANKEES') || event.includes('DODGERS')) sportsToCheck.add('MLB');
-        if(event.includes('NHL') || event.includes('BRUINS') || event.includes('RANGERS')) sportsToCheck.add('NHL');
-        // Default to checking NBA and NFL if unsure
-        if(sportsToCheck.size === 0) {
-            sportsToCheck.add('NBA');
-            sportsToCheck.add('NFL');
-        }
-    });
+    // Check all major sports to ensure we don't miss any games
+    const sportsToCheck = new Set(['NBA', 'NFL', 'MLB', 'NHL', 'NCAAF', 'NCAAB']);
     
     // Fetch scores for detected sports
     const allGames = [];
@@ -1501,6 +1489,7 @@ function renderActiveBets() {
         // Live score overlay
         let liveOverlay = '';
         if(bet._liveGame && bet._liveGame.isLive && bet.status === 'pending') {
+            const game = bet._liveGame;
             
             // Detect if this is a player prop (contains player name or prop keywords)
             const isPlayerProp = bet.selection && (
