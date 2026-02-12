@@ -64,15 +64,16 @@ let data = window.data;
 let currentAccIndex = -1;
 let selectedBookForNewAccount = "";
 let privacyMode = false;
+let isSaving = false;
+let lastSaveTime = 0;
+
+// DOM Element Cache - populated on DOMContentLoaded
+const dom = {};
 
 // Global function to sync data reference after Firestore loads
 window.syncDataReference = function() {
     data = window.data;
-
 };
-
-// Firebase auth and data
-// (Moved to Firebase module above)
 
 window.onload = () => {
     const saved = localStorage.getItem(SAVE_KEY); 
@@ -177,22 +178,37 @@ function factoryReset() {
     }
 }
 
-// Firebase functions
-// Firestore functions moved to module above
-
 function toggleAuthModal() {
-  document.getElementById('auth-modal').style.display = 'flex';
+  dom.authModal.style.display = 'flex';
 }
 
 function closeAuthModal() {
-  document.getElementById('auth-modal').style.display = 'none';
-  document.getElementById('auth-error').innerText = '';
+  dom.authModal.style.display = 'none';
+  dom.authError.innerText = '';
 }
 
-// Firebase functions moved to module above
-
-// Attach event listeners
+// Attach event listeners and cache DOM elements
 document.addEventListener('DOMContentLoaded', () => {
+  // Cache frequently accessed DOM elements
+  dom.authModal = document.getElementById('auth-modal');
+  dom.authError = document.getElementById('auth-error');
+  dom.dashTotal = document.getElementById('dash-total');
+  dom.dashBonus = document.getElementById('dash-bonus');
+  dom.dashStake = document.getElementById('dash-stake');
+  dom.dashDay = document.getElementById('dash-day');
+  dom.dashDayHero = document.getElementById('dash-day-hero');
+  dom.accountCount = document.getElementById('account-count');
+  dom.cardList = document.getElementById('card-list');
+  dom.inputBook = document.getElementById('input-book');
+  dom.inpNick = document.getElementById('inp-nick');
+  dom.inpCash = document.getElementById('inp-cash');
+  dom.inpBonus = document.getElementById('inp-bonus');
+  dom.inpStake = document.getElementById('inp-stake');
+  dom.hedgeBookSelect = document.getElementById('hedge-book-select');
+  dom.booksListArea = document.getElementById('books-list-area');
+  dom.toast = document.getElementById('toast');
+  dom.inpageDebug = document.getElementById('inpage-debug');
+  
   document.getElementById('signin-btn').onclick = window.signInUser;
   document.getElementById('signup-btn').onclick = window.signUpUser;
   document.getElementById('google-signin-btn').onclick = window.signInWithGoogle;
@@ -373,7 +389,7 @@ function runArbCalc() {
 }
 
 function renderDashboard() {
-    const list = document.getElementById('card-list');
+    if(!dom.cardList) return; // Not yet initialized
     let totCash=0, totBonus=0, startBasis=0, totStake=0;
     const grouped = {};
     
@@ -388,28 +404,26 @@ function renderDashboard() {
     });
 
     const totalNetWorth = totCash + totStake;
-    document.getElementById('dash-total').innerText = "$" + totalNetWorth.toLocaleString('en-US', {minimumFractionDigits: 2});
+    dom.dashTotal.innerText = "$" + totalNetWorth.toLocaleString('en-US', {minimumFractionDigits: 2});
     
     const diff = totalNetWorth - startBasis;
-    const dayEl = document.getElementById('dash-day');
-    dayEl.innerText = (diff >= 0 ? "+$" : "-$") + Math.abs(diff).toFixed(2);
-    dayEl.className = "hero-stat-value " + (diff >= 0 ? "pos" : "neg");
+    dom.dashDay.innerText = (diff >= 0 ? "+$" : "-$") + Math.abs(diff).toFixed(2);
+    dom.dashDay.className = "hero-stat-value " + (diff >= 0 ? "pos" : "neg");
     
     // Update hero change pill
-    const heroChange = document.getElementById('dash-day-hero');
-    if(heroChange) {
-        heroChange.innerText = (diff >= 0 ? "+$" : "-$") + Math.abs(diff).toFixed(2) + " today";
-        heroChange.className = "hero-change" + (diff < 0 ? " negative" : "");
+    if(dom.dashDayHero) {
+        dom.dashDayHero.innerText = (diff >= 0 ? "+$" : "-$") + Math.abs(diff).toFixed(2) + " today";
+        dom.dashDayHero.className = "hero-change" + (diff < 0 ? " negative" : "");
     }
     
-    document.getElementById('dash-bonus').innerText = "$" + totBonus.toFixed(0);
-    document.getElementById('dash-stake').innerText = "$" + totStake.toFixed(2);
+    dom.dashBonus.innerText = "$" + totBonus.toFixed(0);
+    dom.dashStake.innerText = "$" + totStake.toFixed(2);
     
     // Update account count
-    const countEl = document.getElementById('account-count');
-    if(countEl) countEl.innerText = data.accounts.length;
+    if(dom.accountCount) dom.accountCount.innerText = data.accounts.length;
 
-    [document.getElementById('dash-total'), document.getElementById('dash-bonus'), document.getElementById('dash-stake')].forEach(el => { if(el) el.classList.toggle('blur-text', privacyMode); });
+    // Toggle privacy blur
+    [dom.dashTotal, dom.dashBonus, dom.dashStake].forEach(el => { if(el) el.classList.toggle('blur-text', privacyMode); });
 
     // Build all cards in a DocumentFragment (single DOM reflow instead of one per card)
     const frag = document.createDocumentFragment();
@@ -451,8 +465,8 @@ function renderDashboard() {
             frag.appendChild(card);
         });
     });
-    list.innerHTML = "";
-    list.appendChild(frag);
+    dom.cardList.innerHTML = "";
+    dom.cardList.appendChild(frag);
 }
 
 function populateHedgeDropdown() {
@@ -462,12 +476,13 @@ function populateHedgeDropdown() {
 }
 
 function openBookManager() {
-    const area = document.getElementById('books-list-area'); area.innerHTML = "";
+    if(!dom.booksListArea) return;
+    dom.booksListArea.innerHTML = "";
     data.myBooks.forEach(bk => {
         const div = document.createElement('div'); 
         div.style.cssText="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;border-left:4px solid "+bk.col;
         div.innerHTML = `<div style="color:var(--text);font-weight:600;">${bk.id}</div><div class="plus-btn" onclick="addNewAccountFromLib('${bk.id}')">+</div>`;
-        area.appendChild(div);
+        dom.booksListArea.appendChild(div);
     });
     openScreen('screen-books');
 }
@@ -475,23 +490,34 @@ function openBookManager() {
 function addNewAccountFromLib(bookId) {
     selectedBookForNewAccount = bookId; currentAccIndex = -1;
     const bk = data.myBooks.find(b => b.id === bookId);
-    const masterBk = MASTER_BOOKS[bookId];
-    const url = masterBk ? masterBk.url : "";
-    document.getElementById('input-book').innerText = bookId; document.getElementById('input-book').style.color = bk.col;
-    document.getElementById('inp-nick').value = "Main"; document.getElementById('inp-cash').value = ""; document.getElementById('inp-bonus').value = ""; document.getElementById('inp-stake').value = "";
+    dom.inputBook.innerText = bookId; 
+    dom.inputBook.style.color = bk.col;
+    dom.inpNick.value = "Main"; 
+    dom.inpCash.value = ""; 
+    dom.inpBonus.value = ""; 
+    dom.inpStake.value = "";
     openScreen('screen-input');
 }
 
 function openInput(idx) {
-    currentAccIndex = idx; const acc = data.accounts[idx]; const bk = data.myBooks.find(b => b.id === acc.book);
-    document.getElementById('input-book').innerText = acc.book; document.getElementById('input-book').style.color = bk.col;
-    document.getElementById('inp-nick').value = acc.nick; document.getElementById('inp-cash').value = acc.cash; document.getElementById('inp-bonus').value = acc.bonus; document.getElementById('inp-stake').value = acc.stake || 0;
+    currentAccIndex = idx; 
+    const acc = data.accounts[idx]; 
+    const bk = data.myBooks.find(b => b.id === acc.book);
+    dom.inputBook.innerText = acc.book; 
+    dom.inputBook.style.color = bk.col;
+    dom.inpNick.value = acc.nick; 
+    dom.inpCash.value = acc.cash; 
+    dom.inpBonus.value = acc.bonus; 
+    dom.inpStake.value = acc.stake || 0;
     openScreen('screen-input');
 }
 
 async function saveInput() {
-    const c = parseFloat(document.getElementById('inp-cash').value); if(isNaN(c)) return alert("Invalid Cash");
-    const b = parseFloat(document.getElementById('inp-bonus').value)||0; const s = parseFloat(document.getElementById('inp-stake').value)||0; const n = document.getElementById('inp-nick').value||"Main";
+    const c = parseFloat(dom.inpCash.value); 
+    if(isNaN(c)) return alert("Invalid Cash");
+    const b = parseFloat(dom.inpBonus.value)||0; 
+    const s = parseFloat(dom.inpStake.value)||0; 
+    const n = dom.inpNick.value||"Main";
     if(currentAccIndex === -1) {
         if(selectedBookForNewAccount) {
             // For new accounts, don't set startBasis to (c+s) which made Day P/L ignore new accounts
@@ -886,11 +912,11 @@ function showTab(t) {
     if(t==='odds') loadOdds();
     if(t==='bets') renderActiveBets();
 }
-function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
-function openScreen(id) { document.getElementById(id).classList.add('active'); }
-function closeScreen(id) { document.getElementById(id).classList.remove('active'); }
+function showToast(m) { if(dom.toast) { dom.toast.innerText=m; dom.toast.classList.add('show'); setTimeout(()=>dom.toast.classList.remove('show'),2000); } }
+function openScreen(id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+function closeScreen(id) { const el = document.getElementById(id); if(el) el.classList.remove('active'); }
 function openSettings() { openScreen('screen-settings'); }
-function toggleDebugPanel() { const d = document.getElementById('inpage-debug'); if(d) { d.style.display = d.style.display === 'none' ? 'block' : 'none'; window._debugVisible = d.style.display !== 'none'; showToast(d.style.display === 'none' ? 'Debug hidden' : 'Debug visible'); } }
+function toggleDebugPanel() { if(dom.inpageDebug) { dom.inpageDebug.style.display = dom.inpageDebug.style.display === 'none' ? 'block' : 'none'; window._debugVisible = dom.inpageDebug.style.display !== 'none'; showToast(dom.inpageDebug.style.display === 'none' ? 'Debug hidden' : 'Debug visible'); } }
 
 /* -----------------------------
    Active Bets - OddsJam CSV Import
