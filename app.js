@@ -2,6 +2,10 @@
 CONSTANTS
 ========================================
 */
+// Toggle .tab-hidden on <html> so CSS can pause animations when tab not visible
+document.addEventListener('visibilitychange', () => {
+    document.documentElement.classList.toggle('tab-hidden', document.hidden);
+});
 function getIcon(domain) { return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`; }
 const FD_ICON = "https://icons.duckduckgo.com/ip3/sportsbook.fanduel.com.ico";
 const SCORE_ICON = "https://icons.duckduckgo.com/ip3/thescore.com.ico";
@@ -1093,26 +1097,32 @@ async function updateLiveScores() {
     }
 }
 
+// Single visibility handler for live tracking (registered once, avoids leaking listeners)
+let _liveVisibilityBound = false;
+function _liveVisibilityHandler() {
+    if(!liveTrackingInterval) return; // tracking not active, ignore
+    if(document.hidden) {
+        isTrackingPaused = true;
+    } else {
+        isTrackingPaused = false;
+        updateLiveScores(); // Immediate update on resume
+    }
+}
+
 function startLiveTracking() {
     if(liveTrackingInterval) return; // Already running
-    
+
     console.log('🔴 Live tracking started');
     updateLiveScores(); // Initial fetch
-    
+
     // Poll every 60 seconds for live games
     liveTrackingInterval = setInterval(updateLiveScores, 60000);
-    
-    // Pause tracking when tab/window not visible
-    document.addEventListener('visibilitychange', () => {
-        if(document.hidden) {
-            isTrackingPaused = true;
-            console.log('⏸️ Live tracking paused (tab hidden)');
-        } else {
-            isTrackingPaused = false;
-            console.log('▶️ Live tracking resumed');
-            updateLiveScores(); // Immediate update on resume
-        }
-    });
+
+    // Register visibility handler only once
+    if(!_liveVisibilityBound) {
+        document.addEventListener('visibilitychange', _liveVisibilityHandler);
+        _liveVisibilityBound = true;
+    }
 }
 
 function stopLiveTracking() {
@@ -2297,6 +2307,8 @@ async function loadEventMarkets(sportKey, idx) {
     let isScrolling = false;
     let scrollTimeout = null;
     let frameCount = 0;
+    let lastFrameTime = 0;
+    const FRAME_INTERVAL = 33; // ~30fps (33ms between frames) instead of 60fps
 
     function resize() {
         w = canvas.width = window.innerWidth;
@@ -2306,17 +2318,17 @@ async function loadEventMarkets(sportKey, idx) {
     let _resizeTimer;
     window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(resize, 150); }, { passive: true });
 
-    // Detect scrolling to reduce calculations
+    // Pause canvas drawing while scrolling (browser is busy with layout)
     window.addEventListener('scroll', () => {
         isScrolling = true;
         clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => { isScrolling = false; }, 150);
+        scrollTimeout = setTimeout(() => { isScrolling = false; }, 200);
     }, { passive: true });
 
     const isMobile = window.innerWidth <= 768;
-    const DOT_COUNT = isMobile ? 15 : 22;
-    const STREAK_COUNT = isMobile ? 5 : 8;
-    const CONNECTION_DIST = isMobile ? 0 : 100; // disable connections on mobile for performance
+    const DOT_COUNT = isMobile ? 12 : 20;
+    const STREAK_COUNT = isMobile ? 4 : 7;
+    const CONNECTION_DIST = isMobile ? 0 : 100; // disable connections on mobile
     const colors = [
         { r: 0, g: 255, b: 135 },   // neon green
         { r: 191, g: 64, b: 255 },   // neon purple
@@ -2369,7 +2381,16 @@ async function loadEventMarkets(sportKey, idx) {
     for(let i = 0; i < DOT_COUNT; i++) particles.push(createDot());
     for(let i = 0; i < STREAK_COUNT; i++) particles.push(createStreak());
 
-    function animate() {
+    function animate(timestamp) {
+        animId = requestAnimationFrame(animate);
+
+        // Throttle to ~30fps
+        if(timestamp - lastFrameTime < FRAME_INTERVAL) return;
+        lastFrameTime = timestamp;
+
+        // Skip drawing entirely while scrolling (let browser focus on layout)
+        if(isScrolling) return;
+
         ctx.clearRect(0, 0, w, h);
         frameCount++;
 
@@ -2458,16 +2479,17 @@ async function loadEventMarkets(sportKey, idx) {
             }
         });
 
-        animId = requestAnimationFrame(animate);
     }
 
-    setTimeout(() => animate(), 500);
+    setTimeout(() => { animId = requestAnimationFrame(animate); }, 500);
 
     document.addEventListener('visibilitychange', () => {
         if(document.hidden) {
             cancelAnimationFrame(animId);
-        } else {
-            animate();
+            animId = null;
+        } else if(!animId) {
+            lastFrameTime = 0;
+            animId = requestAnimationFrame(animate);
         }
     });
 })();
