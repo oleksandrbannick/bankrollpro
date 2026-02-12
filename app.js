@@ -2152,17 +2152,17 @@ function renderEventsList(sportKey) {
         }
         card.innerHTML = `
             <div class="odds-event-header">
-                <div style="flex:1; margin-right:12px;">
-                    <div class="odds-event-teams" style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                        ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:20px; height:20px; object-fit:contain;">` : ''}
-                        <span>${ev.away}</span>
-                        <span style="color:var(--text-muted); font-size:12px;">@</span>
-                        <span>${ev.home}</span>
-                        ${getTeamLogo(ev.home) ? `<img src="${getTeamLogo(ev.home)}" alt="${ev.home}" style="width:20px; height:20px; object-fit:contain;">` : ''}
+                <div style="flex:1; min-width:0;">
+                    <div class="odds-event-teams" style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                        ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:18px; height:18px; object-fit:contain; flex-shrink:0;">` : ''}
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.away}</span>
+                        <span style="color:var(--text-muted); font-size:12px; flex-shrink:0;">@</span>
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ev.home}</span>
+                        ${getTeamLogo(ev.home) ? `<img src="${getTeamLogo(ev.home)}" alt="${ev.home}" style="width:18px; height:18px; object-fit:contain; flex-shrink:0;">` : ''}
                     </div>
                     <div class="odds-event-time">📅 ${time}</div>
                 </div>
-                <div class="odds-event-actions">
+                <div class="odds-event-actions" style="margin-left:16px; flex-shrink:0;">
                     <button class="odds-btn odds-btn-primary" data-load="${idx}">View All Markets</button>
                 </div>
             </div>
