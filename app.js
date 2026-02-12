@@ -1407,6 +1407,7 @@ function renderActiveBets() {
         if(currentBetFilter === 'pending') emptyMsg = 'No pending bets';
         else if(currentBetFilter === 'won') emptyMsg = 'No winning bets yet';
         else if(currentBetFilter === 'lost') emptyMsg = 'No losing bets';
+        if(currentBetDateFilter === 'live') emptyMsg = 'No live games right now';
         
         list.innerHTML = `
             <div class="bets-empty">
@@ -1500,20 +1501,47 @@ function renderActiveBets() {
         // Live score overlay
         let liveOverlay = '';
         if(bet._liveGame && bet._liveGame.isLive && bet.status === 'pending') {
-            const game = bet._liveGame;
-            liveOverlay = `
-                <div class="bet-live-overlay" style="margin:8px 0; padding:8px; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-                        <span class="live-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#FF4444;">
-                            <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
-                            LIVE
-                        </span>
-                        <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'Live'}</span>
+            
+            // Detect if this is a player prop (contains player name or prop keywords)
+            const isPlayerProp = bet.selection && (
+                /\b(over|under|o\/u)\s+\d+\.?\d*\s+(points|rebounds|assists|yards|touchdowns|receptions|rushing|passing)/i.test(bet.selection) ||
+                /\b(anytime|first|last)\s+(touchdown|goal|basket|scorer)/i.test(bet.selection) ||
+                bet.market?.toLowerCase().includes('player')
+            );
+            
+            if(isPlayerProp) {
+                // For player props, just show game is live but don't show score (misleading)
+                liveOverlay = `
+                    <div class="bet-live-overlay" style="margin:8px 0; padding:8px; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px;">
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <span class="live-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#FF4444;">
+                                <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
+                                LIVE
+                            </span>
+                            <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'In Progress'}</span>
+                        </div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                            ${game.away} vs ${game.home} • Player prop tracking unavailable
+                        </div>
                     </div>
-                    <div style="font-size:13px; font-weight:600; color:var(--text);">
-                        ${game.away} ${game.awayScore} - ${game.homeScore} ${game.home}
+                `;
+            } else {
+                // For game-level bets (moneyline, spread, total), show full score
+                liveOverlay = `
+                    <div class="bet-live-overlay" style="margin:8px 0; padding:8px; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                            <span class="live-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#FF4444;">
+                                <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
+                                LIVE
+                            </span>
+                            <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'Live'}</span>
+                        </div>
+                        <div style="font-size:13px; font-weight:600; color:var(--text);">
+                            ${game.away} ${game.awayScore} - ${game.homeScore} ${game.home}
+                        </div>
                     </div>
-                </div>
+                `;
+            }  </div>
             `;
         } else if(bet._liveGame && bet._liveGame.isFinal && bet.status === 'pending') {
             const game = bet._liveGame;
