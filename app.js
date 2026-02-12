@@ -1076,6 +1076,9 @@ function importOddsJamCSV(input) {
             
             activeBets = bets;
             _syncBets();
+            const datesFound = bets.filter(b => b.date && b.date.trim()).length;
+            console.log(`✅ Imported ${bets.length} bets. ${datesFound}/${bets.length} have dates.`);
+            if(datesFound === 0) console.warn('⚠️ No dates found in CSV. Check column headers match: date, time, start, placed, created_at, event_start_date');
             showToast(`Imported ${bets.length} bets — saving to cloud...`);
             renderActiveBets();
         } catch(err) {
