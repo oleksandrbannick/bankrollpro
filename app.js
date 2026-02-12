@@ -2296,7 +2296,7 @@ async function loadEventMarkets(sportKey, idx) {
    DESIGN UPGRADE v39 — New Features
 ======================================== */
 
-// --- FLOATING PARTICLE SYSTEM (Enhanced: dots + streaks + constellations) ---
+// --- FLOATING PARTICLE SYSTEM (Premium: constellations + elegant money/growth symbols) ---
 (function initParticles() {
     const canvas = document.getElementById('particle-canvas');
     if(!canvas) return;
@@ -2326,60 +2326,65 @@ async function loadEventMarkets(sportKey, idx) {
     }, { passive: true });
 
     const isMobile = window.innerWidth <= 768;
-    const DOT_COUNT = isMobile ? 12 : 20;
-    const STREAK_COUNT = isMobile ? 4 : 7;
-    const CONNECTION_DIST = isMobile ? 0 : 100; // disable connections on mobile
+    const DOT_COUNT = isMobile ? 14 : 24;
+    const SYMBOL_COUNT = isMobile ? 2 : 4; // $ signs and arrows
+    const CONNECTION_DIST = isMobile ? 80 : 140; // Visible but not overwhelming
     const colors = [
-        { r: 0, g: 255, b: 135 },   // neon green
-        { r: 191, g: 64, b: 255 },   // neon purple
-        { r: 0, g: 204, b: 106 },    // mid green
-        { r: 160, g: 80, b: 255 },   // light purple
-        { r: 0, g: 217, b: 255 },    // cyan
+        { r: 0, g: 255, b: 135 },   // neon green (primary)
+        { r: 0, g: 230, b: 118 },   // bright green
+        { r: 147, g: 51, b: 234 },  // purple accent
+        { r: 0, g: 204, b: 106 },   // success green
+        { r: 100, g: 200, b: 255 }, // subtle cyan
     ];
 
     function createDot() {
         const col = colors[Math.floor(Math.random() * colors.length)];
+        const isBackground = Math.random() > 0.4; // 60% background, 40% foreground
         return {
             type: 'dot',
+            layer: isBackground ? 'back' : 'front',
             x: Math.random() * w,
             y: Math.random() * h,
-            size: Math.random() * 2.5 + 1,
-            speedX: (Math.random() - 0.5) * 0.35,
-            speedY: (Math.random() - 0.5) * 0.3 - 0.08,
-            opacity: Math.random() * 0.4 + 0.1,
-            targetOpacity: Math.random() * 0.5 + 0.15,
-            fadeSpeed: 0.002 + Math.random() * 0.004,
+            size: isBackground ? Math.random() * 2 + 1 : Math.random() * 3 + 2,
+            speedX: (Math.random() - 0.5) * (isBackground ? 0.25 : 0.4),
+            speedY: (Math.random() - 0.5) * (isBackground ? 0.2 : 0.35) - 0.08,
+            opacity: Math.random() * 0.4 + 0.15,
+            targetOpacity: Math.random() * 0.6 + 0.2,
+            fadeSpeed: 0.002 + Math.random() * 0.003,
             fadingIn: Math.random() > 0.5,
             r: col.r, g: col.g, b: col.b,
             pulse: Math.random() * Math.PI * 2,
-            pulseSpeed: 0.008 + Math.random() * 0.015,
+            pulseSpeed: 0.01 + Math.random() * 0.015,
         };
     }
 
-    function createStreak() {
-        const col = colors[Math.floor(Math.random() * colors.length)];
-        const angle = (Math.random() * 0.8 + 0.2) * (Math.random() > 0.5 ? 1 : -1); // diagonal
+    function createSymbol() {
+        const symbols = ['$', '↗', '↗', '$']; // More arrows for growth theme
+        const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+        const col = symbol === '$' ? colors[0] : colors[3]; // Green for both
         return {
-            type: 'streak',
+            type: 'symbol',
+            layer: 'front',
+            symbol: symbol,
             x: Math.random() * w,
             y: Math.random() * h,
-            length: Math.random() * 20 + 10,
-            thickness: Math.random() * 1.2 + 0.4,
-            angle: angle,
-            speedX: Math.cos(angle) * (0.15 + Math.random() * 0.25),
-            speedY: Math.sin(angle) * (0.15 + Math.random() * 0.25) - 0.15,
-            opacity: Math.random() * 0.25 + 0.05,
-            targetOpacity: Math.random() * 0.35 + 0.1,
-            fadeSpeed: 0.001 + Math.random() * 0.003,
+            size: Math.random() * 8 + 16, // Larger, more prominent
+            speedX: (Math.random() - 0.5) * 0.15,
+            speedY: (Math.random() - 0.5) * 0.12 - 0.06,
+            opacity: Math.random() * 0.2 + 0.1,
+            targetOpacity: Math.random() * 0.35 + 0.15,
+            fadeSpeed: 0.001 + Math.random() * 0.002,
             fadingIn: Math.random() > 0.5,
             r: col.r, g: col.g, b: col.b,
             pulse: Math.random() * Math.PI * 2,
-            pulseSpeed: 0.005 + Math.random() * 0.01,
+            pulseSpeed: 0.006 + Math.random() * 0.008,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.005,
         };
     }
 
     for(let i = 0; i < DOT_COUNT; i++) particles.push(createDot());
-    for(let i = 0; i < STREAK_COUNT; i++) particles.push(createStreak());
+    for(let i = 0; i < SYMBOL_COUNT; i++) particles.push(createSymbol());
 
     function animate(timestamp) {
         animId = requestAnimationFrame(animate);
@@ -2395,13 +2400,14 @@ async function loadEventMarkets(sportKey, idx) {
         frameCount++;
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        const opacityMult = isLight ? 0.35 : 1;
+        const opacityMult = isLight ? 0.4 : 1;
 
         // Update positions and opacities
         particles.forEach(p => {
             p.x += p.speedX;
             p.y += p.speedY;
             p.pulse += p.pulseSpeed;
+            if(p.type === 'symbol') p.rotation += p.rotationSpeed;
 
             if(p.fadingIn) {
                 p.opacity += p.fadeSpeed;
@@ -2410,58 +2416,89 @@ async function loadEventMarkets(sportKey, idx) {
                 p.opacity -= p.fadeSpeed;
                 if(p.opacity <= 0.05) {
                     p.fadingIn = true;
-                    p.targetOpacity = p.type === 'dot' ? Math.random() * 0.5 + 0.15 : Math.random() * 0.35 + 0.1;
+                    if(p.type === 'dot') {
+                        p.targetOpacity = Math.random() * 0.6 + 0.2;
+                    } else {
+                        p.targetOpacity = Math.random() * 0.35 + 0.15;
+                    }
                 }
             }
 
-            if(p.x < -30) p.x = w + 30;
-            if(p.x > w + 30) p.x = -30;
-            if(p.y < -30) p.y = h + 30;
-            if(p.y > h + 30) p.y = -30;
+            if(p.x < -50) p.x = w + 50;
+            if(p.x > w + 50) p.x = -50;
+            if(p.y < -50) p.y = h + 50;
+            if(p.y > h + 50) p.y = -50;
         });
 
-        // Draw constellation connection lines (only when not scrolling and every 2nd frame)
-        if(CONNECTION_DIST > 0 && !isScrolling && frameCount % 2 === 0) {
-            const dots = particles.filter(p => p.type === 'dot');
-            ctx.lineWidth = 0.6;
+        // Draw elegant constellation connection lines
+        if(CONNECTION_DIST > 0 && frameCount % 2 === 0) {
+            const dots = particles.filter(p => p.type === 'dot' && p.layer === 'back');
+            ctx.lineWidth = 0.8;
             // Only check nearby particles using simple grid optimization
             for(let i = 0; i < dots.length; i++) {
-                for(let j = i + 1; j < Math.min(i + 5, dots.length); j++) { // Limit comparisons
+                for(let j = i + 1; j < Math.min(i + 6, dots.length); j++) {
                     const dx = dots[i].x - dots[j].x;
                     const dy = dots[i].y - dots[j].y;
                     const distSq = dx * dx + dy * dy;
                     if(distSq < CONNECTION_DIST * CONNECTION_DIST) {
                         const dist = Math.sqrt(distSq);
-                        const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
+                        const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.18 * opacityMult;
                         const avgR = (dots[i].r + dots[j].r) >> 1;
                         const avgG = (dots[i].g + dots[j].g) >> 1;
                         const avgB = (dots[i].b + dots[j].b) >> 1;
+                        
+                        // Main connection line
                         ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
                         ctx.beginPath();
                         ctx.moveTo(dots[i].x, dots[i].y);
-                        ctx.lineTo(dots[j].x, dots[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
+                        c (background layer first, then foreground)
+        ['back', 'front'].forEach(layer => {
+            particles.filter(p => p.layer === layer || p.type === 'symbol').forEach(p => {
+                const pulseFactor = 0.75 + Math.sin(p.pulse) * 0.25;
+                const finalOpacity = p.opacity * pulseFactor * opacityMult;
 
-        // Draw particles
-        particles.forEach(p => {
-            const pulseFactor = 0.7 + Math.sin(p.pulse) * 0.3;
-            const finalOpacity = p.opacity * pulseFactor * opacityMult;
-
-            if(p.type === 'dot') {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
-                ctx.fill();
-
-                // Glow halo - only for larger dots and skip if opacity too low
-                if(p.size > 2.2 && finalOpacity > 0.15) {
+                if(p.type === 'dot') {
+                    // Main dot
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.07})`;
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
+                    ctx.fill();
+
+                    // Enhanced glow halo for depth
+                    if(finalOpacity > 0.12) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.08})`;
+                        ctx.fill();
+                        
+                        // Foreground dots get extra glow
+                        if(p.layer === 'front' && p.size > 3) {
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size * 5, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.04})`;
+                            ctx.fill();
+                        }
+                    }
+                } else if(p.type === 'symbol') {
+                    // Elegant money/growth symbols
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation);
+                    ctx.globalAlpha = finalOpacity;
+                    
+                    // Glow background
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `rgba(${p.r},${p.g},${p.b},0.6)`;
+                    
+                    ctx.font = `bold ${p.size}px Inter, system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${Math.min(finalOpacity * 1.2, 0.9)})`;
+                    ctx.fillText(p.symbol, 0, 0);
+                    
+                    ctx.restore();
+                }
+            });       ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.07})`;
                     ctx.fill();
                 }
             } else {
