@@ -131,7 +131,6 @@ window.onload = () => {
         dateMap.set(point.d, point); // This will overwrite earlier entries with same date
     });
     data.graphData = Array.from(dateMap.values());
-    console.log('Cleaned graphData, now has', data.graphData.length, 'unique points');
     
     renderDashboard();
     // Refresh graph if visible
@@ -584,7 +583,13 @@ function setGraphRange(range) {
     drawGraph();
 }
 
+let _drawGraphTimer = null;
 function drawGraph() {
+    if(_drawGraphTimer) cancelAnimationFrame(_drawGraphTimer);
+    _drawGraphTimer = requestAnimationFrame(_drawGraphInner);
+}
+function _drawGraphInner() {
+    _drawGraphTimer = null;
     const c = document.getElementById('growthCanvas'); if(!c) return;
     const ctx = c.getContext('2d'); 
     let pts = data.graphData || [];
@@ -677,7 +682,7 @@ function drawGraph() {
     grad.addColorStop(0, "#BF40FF");
     grad.addColorStop(1, "#00FF87");
     ctx.strokeStyle = grad;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = pts.length > 30 ? 2 : 3;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.beginPath();
@@ -712,18 +717,23 @@ function drawGraph() {
     ctx.fillStyle = fillGrad;
     ctx.fill();
 
-    // Draw data points
+    // Draw data points — hide dots when dense to avoid clutter
+    const showDots = pts.length <= 14;
+    const dotOuter = pts.length <= 7 ? 6 : 4;
+    const dotInner = pts.length <= 7 ? 4 : 2.5;
     const points = pts.map((p, i) => {
         const x = padding + (i * step);
         const y = h - ((p.v - pMin)/(pMax - pMin)) * h;
-        ctx.fillStyle = chartPointBg;
-        ctx.beginPath();
-        ctx.arc(x,y,6,0,Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = "#00FF87";
-        ctx.beginPath();
-        ctx.arc(x,y,4,0,Math.PI*2);
-        ctx.fill();
+        if(showDots) {
+            ctx.fillStyle = chartPointBg;
+            ctx.beginPath();
+            ctx.arc(x,y,dotOuter,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#00FF87";
+            ctx.beginPath();
+            ctx.arc(x,y,dotInner,0,Math.PI*2);
+            ctx.fill();
+        }
         return {x,y,data:p};
     });
 
