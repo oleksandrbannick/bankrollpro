@@ -871,6 +871,13 @@ body {
 .odds-btn-primary { background: var(--success); color: #000; }
 .odds-btn-primary:hover { filter: brightness(1.1); }
 
+@media (max-width: 768px) {
+    .odds-btn-mobile {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
+
 .odds-grid { display: grid; gap: 1px; background: var(--border); border-radius: 0 0 14px 14px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; min-width: 100%; }
 .odds-grid-header { display: contents; }
 .odds-grid-header > div { 
