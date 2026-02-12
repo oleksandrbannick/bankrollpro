@@ -82,6 +82,7 @@
 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
+    window.currentUser = user; // Keep global ref in sync
     authStateReady = true;
 
     // Check if factory reset is in progress - skip Firestore load
@@ -232,11 +233,17 @@
   }
 
   async function saveBetsToFirestore() {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.warn('saveBetsToFirestore: No user signed in, saving to localStorage only');
+      return;
+    }
     try {
-      await setDoc(doc(db, 'users', currentUser.uid, 'data', 'bets'), { activeBets: window.activeBets || [] });
+      const betsToSave = window.activeBets || [];
+      await setDoc(doc(db, 'users', currentUser.uid, 'data', 'bets'), { activeBets: betsToSave });
+      console.log('Bets saved to Firestore:', betsToSave.length, 'bets');
     } catch (error) {
       console.error('Error saving bets:', error);
+      if(window.showToast) showToast('Cloud save failed — data saved locally');
     }
   }
 

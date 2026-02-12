@@ -591,208 +591,210 @@ function drawGraph() {
 function _drawGraphInner() {
     _drawGraphTimer = null;
     const c = document.getElementById('growthCanvas'); if(!c) return;
-    const ctx = c.getContext('2d'); 
+    const ctx = c.getContext('2d');
     let pts = data.graphData || [];
-    const w = c.width = c.parentElement.offsetWidth; 
-    const h = c.height = 320;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = c.parentElement.offsetWidth;
+    const cssH = 280;
+    c.style.width = cssW + 'px';
+    c.style.height = cssH + 'px';
+    c.width = cssW * dpr;
+    c.height = cssH * dpr;
+    ctx.scale(dpr, dpr);
+    const w = cssW, h = cssH;
 
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
     const chartBg = isLight ? '#ffffff' : '#0d1117';
     const chartMuted = isLight ? '#656d76' : '#8b949e';
-    const chartGrid = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+    const chartGrid = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)';
     const chartLabel = isLight ? '#8b949e' : '#484f58';
-    const chartTooltipBg = isLight ? '#f6f8fa' : '#161b22';
-    const chartPointBg = isLight ? '#ffffff' : '#0d1117';
 
-    ctx.fillStyle = chartBg; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = chartBg; ctx.fillRect(0, 0, w, h);
 
     if(pts.length < 2) {
-        ctx.fillStyle = chartMuted; 
-        ctx.font = "14px sans-serif"; 
-        ctx.textAlign = "center"; 
-        ctx.fillText("Lock Day 2+ times to see your curve.", w/2, h/2); 
-        
-        // Clear stats
-        document.getElementById('stat-growth').textContent = '$0';
-        document.getElementById('stat-percent').textContent = '0%';
-        document.getElementById('stat-count').textContent = '0';
-        return; 
+        ctx.fillStyle = chartMuted;
+        ctx.font = "14px 'Inter', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Lock Day 2+ times to see your curve.", w/2, h/2);
+        const sg = document.getElementById('stat-growth');
+        const sp = document.getElementById('stat-percent');
+        const sc = document.getElementById('stat-count');
+        if(sg) { sg.textContent = '$0'; sg.className = 'graph-stat-value'; }
+        if(sp) { sp.textContent = '0%'; sp.className = 'graph-stat-value'; }
+        if(sc) sc.textContent = '0';
+        return;
     }
-    
+
     // Apply time range filter
     if(currentGraphRange !== 'all') {
         const rangeNum = parseInt(currentGraphRange);
-        if(pts.length > rangeNum) {
-            pts = pts.slice(-rangeNum);
-        }
+        if(pts.length > rangeNum) pts = pts.slice(-rangeNum);
     }
-    
-    // Update statistics
-    const firstVal = pts[0].v;
-    const lastVal = pts[pts.length - 1].v;
+
+    // Stats
+    const firstVal = pts[0].v, lastVal = pts[pts.length - 1].v;
     const growth = lastVal - firstVal;
-    const growthPercent = ((growth / firstVal) * 100).toFixed(1);
-    
-    const statGrowth = document.getElementById('stat-growth');
-    const statPercent = document.getElementById('stat-percent');
-    const statCount = document.getElementById('stat-count');
-    
-    if(statGrowth) {
-        statGrowth.textContent = (growth >= 0 ? '+$' : '-$') + Math.abs(growth).toFixed(2);
-        statGrowth.className = 'graph-stat-value ' + (growth >= 0 ? 'positive' : 'negative');
-    }
-    if(statPercent) {
-        statPercent.textContent = (growth >= 0 ? '+' : '') + growthPercent + '%';
-        statPercent.className = 'graph-stat-value ' + (growth >= 0 ? 'positive' : 'negative');
-    }
-    if(statCount) {
-        statCount.textContent = pts.length;
-    }
-    
-    // Find min/max for scaling
-    let min = pts[0].v, max = pts[0].v; 
-    pts.forEach(p => { 
-        if(p.v < min) min = p.v; 
-        if(p.v > max) max = p.v; 
-    });
-    const range = max - min; 
-    const pad = (range === 0 ? 100 : range * 0.15); 
-    const pMin = min - pad; 
-    const pMax = max + pad;
-    
-    // Draw grid lines with better formatting
-    ctx.strokeStyle = chartGrid;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for(let i=0; i<=5; i++) {
-        const y = h - ((i/5) * h);
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        const labelVal = pMin + (i/5)*(pMax-pMin);
-        const labelText = '$' + (labelVal >= 1000 ? (labelVal/1000).toFixed(1) + 'k' : labelVal.toFixed(0));
+    const growthPct = firstVal !== 0 ? ((growth / Math.abs(firstVal)) * 100).toFixed(1) : '0.0';
+    const isUp = growth >= 0;
+    const lineColor = isUp ? '#00FF87' : '#FF4444';
+
+    const sg = document.getElementById('stat-growth');
+    const sp = document.getElementById('stat-percent');
+    const sc = document.getElementById('stat-count');
+    if(sg) { sg.textContent = (isUp ? '+$' : '-$') + Math.abs(growth).toFixed(2); sg.className = 'graph-stat-value ' + (isUp ? 'positive' : 'negative'); }
+    if(sp) { sp.textContent = (isUp ? '+' : '') + growthPct + '%'; sp.className = 'graph-stat-value ' + (isUp ? 'positive' : 'negative'); }
+    if(sc) sc.textContent = pts.length;
+
+    // Scale
+    let min = Infinity, max = -Infinity;
+    pts.forEach(p => { if(p.v < min) min = p.v; if(p.v > max) max = p.v; });
+    const range = max - min;
+    const pad = range === 0 ? 100 : range * 0.12;
+    const pMin = min - pad, pMax = max + pad;
+
+    // Grid — minimal, just 3 lines
+    ctx.strokeStyle = chartGrid; ctx.lineWidth = 1;
+    for(let i = 1; i <= 3; i++) {
+        const y = h - ((i / 4) * h);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        const val = pMin + (i / 4) * (pMax - pMin);
         ctx.fillStyle = chartLabel;
-        ctx.font = "11px 'Inter', -apple-system, monospace";
+        ctx.font = "10px 'Inter', monospace";
         ctx.textAlign = "left";
-        ctx.fillText(labelText, 8, y - 6);
+        ctx.fillText('$' + (val >= 1000 ? (val/1000).toFixed(1) + 'k' : val.toFixed(0)), 6, y - 4);
     }
-    ctx.stroke();
 
-    // Draw gradient line
-    const grad = ctx.createLinearGradient(0, 0, w, 0); 
-    grad.addColorStop(0, "#BF40FF");
-    grad.addColorStop(1, "#00FF87");
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = pts.length > 30 ? 2 : 3;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.beginPath();
-
-    // Add padding so first and last points are fully visible
-    const padding = 20;
-    const graphWidth = w - (padding * 2);
-    const step = graphWidth / (pts.length - 1);
-
-    // Bezier curve interpolation for smooth lines
+    // Build pixel points
+    const padX = 12;
+    const graphW = w - padX * 2;
+    const step = pts.length > 1 ? graphW / (pts.length - 1) : 0;
     const graphPts = pts.map((p, i) => ({
-        x: padding + (i * step),
-        y: h - ((p.v - pMin)/(pMax - pMin)) * h
+        x: padX + i * step,
+        y: h * 0.92 - ((p.v - pMin) / (pMax - pMin)) * h * 0.84,
+        data: p
     }));
 
+    // Draw smooth line via bezier
+    ctx.beginPath();
     ctx.moveTo(graphPts[0].x, graphPts[0].y);
     for(let i = 0; i < graphPts.length - 1; i++) {
-        const curr = graphPts[i];
-        const next = graphPts[i + 1];
+        const curr = graphPts[i], next = graphPts[i + 1];
         const cpx = (curr.x + next.x) / 2;
         ctx.bezierCurveTo(cpx, curr.y, cpx, next.y, next.x, next.y);
     }
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.stroke();
 
-    // Fill area under curve with richer gradient
-    ctx.lineTo(graphPts[graphPts.length-1].x, h);
+    // Fill under curve
+    ctx.lineTo(graphPts[graphPts.length - 1].x, h);
     ctx.lineTo(graphPts[0].x, h);
+    ctx.closePath();
     const fillGrad = ctx.createLinearGradient(0, 0, 0, h);
-    fillGrad.addColorStop(0, "rgba(0, 255, 135, 0.2)");
-    fillGrad.addColorStop(0.5, "rgba(191, 64, 255, 0.06)");
-    fillGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = fillGrad;
-    ctx.fill();
-
-    // Draw data points — hide dots when dense to avoid clutter
-    const showDots = pts.length <= 14;
-    const dotOuter = pts.length <= 7 ? 6 : 4;
-    const dotInner = pts.length <= 7 ? 4 : 2.5;
-    const points = pts.map((p, i) => {
-        const x = padding + (i * step);
-        const y = h - ((p.v - pMin)/(pMax - pMin)) * h;
-        if(showDots) {
-            ctx.fillStyle = chartPointBg;
-            ctx.beginPath();
-            ctx.arc(x,y,dotOuter,0,Math.PI*2);
-            ctx.fill();
-            ctx.fillStyle = "#00FF87";
-            ctx.beginPath();
-            ctx.arc(x,y,dotInner,0,Math.PI*2);
-            ctx.fill();
-        }
-        return {x,y,data:p};
-    });
-
-    // Interactive hover tooltip — uses overlay canvas to avoid full redraws
-    let tooltipCanvas = c.parentElement.querySelector('.tooltip-overlay');
-    if(!tooltipCanvas) {
-        tooltipCanvas = document.createElement('canvas');
-        tooltipCanvas.className = 'tooltip-overlay';
-        tooltipCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;';
-        c.parentElement.style.position = 'relative';
-        c.parentElement.appendChild(tooltipCanvas);
+    if(isUp) {
+        fillGrad.addColorStop(0, 'rgba(0,255,135,0.18)');
+        fillGrad.addColorStop(1, 'rgba(0,255,135,0)');
+    } else {
+        fillGrad.addColorStop(0, 'rgba(255,68,68,0.18)');
+        fillGrad.addColorStop(1, 'rgba(255,68,68,0)');
     }
-    tooltipCanvas.width = w; tooltipCanvas.height = h;
-    const tctx = tooltipCanvas.getContext('2d');
+    ctx.fillStyle = fillGrad; ctx.fill();
 
-    let _graphRafPending = false;
-    c.onmousemove = (e) => {
-        if(_graphRafPending) return;
-        _graphRafPending = true;
-        requestAnimationFrame(() => {
-            _graphRafPending = false;
-            const rect = c.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) * (w / rect.width);
-            const my = (e.clientY - rect.top) * (h / rect.height);
-            let closest = null; let minDist = 9999;
-            points.forEach(pt => {
-                const d = Math.hypot(mx - pt.x, my - pt.y);
-                if(d < minDist){ minDist = d; closest = pt; }
-            });
+    // --- Robinhood-style touch/mouse scrub ---
+    // Use an overlay canvas for interactive elements
+    let overlay = c.parentElement.querySelector('.tooltip-overlay');
+    if(!overlay) {
+        overlay = document.createElement('canvas');
+        overlay.className = 'tooltip-overlay';
+        overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:auto;border-radius:12px;touch-action:none;';
+        c.parentElement.style.position = 'relative';
+        c.parentElement.appendChild(overlay);
+    }
+    overlay.width = cssW * dpr; overlay.height = cssH * dpr;
+    overlay.style.width = cssW + 'px'; overlay.style.height = cssH + 'px';
+    const octx = overlay.getContext('2d');
+    octx.scale(dpr, dpr);
 
-            tctx.clearRect(0, 0, w, h);
+    // Scrub label element (above chart)
+    let scrubLabel = c.parentElement.querySelector('.graph-scrub-label');
+    if(!scrubLabel) {
+        scrubLabel = document.createElement('div');
+        scrubLabel.className = 'graph-scrub-label';
+        scrubLabel.style.cssText = 'position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;color:var(--text);opacity:0;transition:opacity 0.15s;pointer-events:none;white-space:nowrap;z-index:5;';
+        c.parentElement.appendChild(scrubLabel);
+    }
 
-            if(closest && minDist < 30) {
-                // Highlight point
-                tctx.strokeStyle = '#00FF87'; tctx.lineWidth = 2;
-                tctx.beginPath(); tctx.arc(closest.x, closest.y, 10, 0, Math.PI*2); tctx.stroke();
-
-                // Tooltip
-                const tooltipW = 140, tooltipH = 50;
-                let tx = closest.x - tooltipW/2, ty = closest.y - tooltipH - 15;
-                if(tx < 5) tx = 5;
-                if(tx + tooltipW > w) tx = w - tooltipW - 5;
-                if(ty < 5) ty = closest.y + 20;
-
-                tctx.fillStyle = chartTooltipBg;
-                tctx.beginPath(); tctx.roundRect(tx, ty, tooltipW, tooltipH, 8); tctx.fill();
-                tctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-                tctx.lineWidth = 1; tctx.stroke();
-                tctx.fillStyle = '#00FF87';
-                tctx.font = "bold 14px 'Inter', -apple-system, sans-serif";
-                tctx.textAlign = 'center';
-                tctx.fillText('$' + closest.data.v.toLocaleString(), tx + tooltipW/2, ty + 22);
-                tctx.fillStyle = chartMuted;
-                tctx.font = "12px 'Inter', -apple-system, sans-serif";
-                tctx.fillText(closest.data.d, tx + tooltipW/2, ty + 40);
-            }
+    function getClosestPoint(clientX) {
+        const rect = overlay.getBoundingClientRect();
+        const mx = (clientX - rect.left) * (w / rect.width);
+        // Find nearest point by x only (Robinhood-style)
+        let closest = graphPts[0], closestIdx = 0, closestDist = Infinity;
+        graphPts.forEach((pt, idx) => {
+            const d = Math.abs(mx - pt.x);
+            if(d < closestDist) { closestDist = d; closest = pt; closestIdx = idx; }
         });
+        return { pt: closest, idx: closestIdx };
+    }
+
+    function drawScrub(clientX) {
+        const { pt, idx } = getClosestPoint(clientX);
+        octx.clearRect(0, 0, w, h);
+
+        // Vertical crosshair line
+        octx.strokeStyle = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)';
+        octx.lineWidth = 1;
+        octx.setLineDash([4, 4]);
+        octx.beginPath(); octx.moveTo(pt.x, 0); octx.lineTo(pt.x, h); octx.stroke();
+        octx.setLineDash([]);
+
+        // Dot on line
+        octx.beginPath(); octx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        octx.fillStyle = chartBg; octx.fill();
+        octx.beginPath(); octx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        octx.fillStyle = lineColor; octx.fill();
+
+        // Update scrub label
+        const val = pt.data.v;
+        const changeFromFirst = val - pts[0].v;
+        const pct = pts[0].v !== 0 ? ((changeFromFirst / Math.abs(pts[0].v)) * 100).toFixed(1) : '0.0';
+        const sign = changeFromFirst >= 0 ? '+' : '';
+        scrubLabel.innerHTML = `<span style="color:${lineColor}">$${val.toLocaleString('en-US', {minimumFractionDigits:2})}</span> <span style="font-size:11px;color:${changeFromFirst >= 0 ? '#00FF87' : '#FF4444'}">${sign}$${Math.abs(changeFromFirst).toFixed(2)} (${sign}${pct}%)</span>`;
+        scrubLabel.style.opacity = '1';
+
+        // Date label at bottom
+        octx.fillStyle = isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)';
+        octx.font = "11px 'Inter', sans-serif";
+        octx.textAlign = 'center';
+        octx.fillText(pt.data.d || ('Day ' + (idx + 1)), pt.x, h - 4);
+    }
+
+    function clearScrub() {
+        octx.clearRect(0, 0, w, h);
+        scrubLabel.style.opacity = '0';
+    }
+
+    // Mouse events
+    let isMouseDown = false;
+    overlay.onmouseenter = (e) => drawScrub(e.clientX);
+    overlay.onmousemove = (e) => drawScrub(e.clientX);
+    overlay.onmouseleave = () => { if(!isMouseDown) clearScrub(); };
+
+    // Touch events (mobile scrub — like Robinhood)
+    overlay.ontouchstart = (e) => {
+        isMouseDown = true;
+        e.preventDefault();
+        drawScrub(e.touches[0].clientX);
     };
-    c.onmouseleave = () => { tctx.clearRect(0, 0, w, h); };
+    overlay.ontouchmove = (e) => {
+        e.preventDefault();
+        drawScrub(e.touches[0].clientX);
+    };
+    overlay.ontouchend = () => {
+        isMouseDown = false;
+        clearScrub();
+    };
+    overlay.onmousedown = () => { isMouseDown = true; };
+    overlay.onmouseup = () => { isMouseDown = false; };
 }
 
 function exportHistoryCSV() {
@@ -911,24 +913,24 @@ function importOddsJamCSV(input) {
             
             const cols = {};
             header.forEach((h, i) => {
-                const key = h.toLowerCase().trim().replace(/['"]/g, '');
-                // OddsJam exact column names
-                if(key === 'sportsbook') cols.book = i;
-                if(key === 'event_name') cols.event = i;
-                if(key === 'bet_name') cols.selection = i;
-                if(key === 'odds') cols.odds = i;
-                if(key === 'stake') cols.stake = i;
-                if(key === 'percentage') cols.ev = i;  // OddsJam uses 'percentage' for EV%
-                if(key === 'market_name') cols.market = i;
-                if(key === 'event_start_date' || key === 'date' || key === 'placed_date' || key === 'created_at' || key === 'start_date' || key === 'game_date') { if(cols.date === undefined) cols.date = i; }
-                if(key === 'potential_payout') cols.payout = i;
-                if(key === 'bet_profit') cols.profit = i;
-                if(key === 'bet_type') cols.type = i;
-                if(key === 'is_free_bet') cols.freebet = i;
-                if(key === 'status') cols.status = i;
-                if(key === 'league') cols.league = i;
-                if(key === 'sport') cols.sport = i;
-                if(key === 'game_id') cols.gameId = i;  // For pairing bets
+                const key = h.toLowerCase().trim().replace(/['"]/g, '').replace(/\s+/g, '_');
+                // OddsJam / general CSV column names (flexible matching)
+                if(key === 'sportsbook' || key === 'book') cols.book = cols.book ?? i;
+                if(key === 'event_name' || key === 'event' || key === 'match' || key === 'game') cols.event = cols.event ?? i;
+                if(key === 'bet_name' || key === 'selection' || key === 'pick' || key === 'bet') cols.selection = cols.selection ?? i;
+                if(key === 'odds' || key === 'american_odds') cols.odds = cols.odds ?? i;
+                if(key === 'stake' || key === 'wager' || key === 'risk' || key === 'amount') cols.stake = cols.stake ?? i;
+                if(key === 'percentage' || key === 'ev' || key === 'ev%' || key === 'ev_percentage' || key === 'expected_value') cols.ev = cols.ev ?? i;
+                if(key === 'market_name' || key === 'market' || key === 'bet_market') cols.market = cols.market ?? i;
+                if(key.includes('date') || key.includes('time') || key.includes('start') || key === 'placed' || key === 'created_at') cols.date = cols.date ?? i;
+                if(key === 'potential_payout' || key === 'payout' || key === 'to_win') cols.payout = cols.payout ?? i;
+                if(key === 'bet_profit' || key === 'profit' || key === 'net') cols.profit = cols.profit ?? i;
+                if(key === 'bet_type' || key === 'type' || key === 'category') cols.type = cols.type ?? i;
+                if(key === 'is_free_bet' || key === 'free_bet' || key === 'freebet' || key === 'promo') cols.freebet = cols.freebet ?? i;
+                if(key === 'status' || key === 'result' || key === 'outcome') cols.status = cols.status ?? i;
+                if(key === 'league' || key === 'sport_league') cols.league = cols.league ?? i;
+                if(key === 'sport') cols.sport = cols.sport ?? i;
+                if(key === 'game_id' || key === 'event_id' || key === 'match_id') cols.gameId = cols.gameId ?? i;
             });
             
             // Parse data rows
@@ -1040,7 +1042,7 @@ function importOddsJamCSV(input) {
             
             activeBets = bets;
             _syncBets();
-            showToast(`Imported ${bets.length} bets`);
+            showToast(`Imported ${bets.length} bets — saving to cloud...`);
             renderActiveBets();
         } catch(err) {
             console.error('CSV Parse Error:', err);
@@ -1106,7 +1108,16 @@ function formatBetDate(dateStr) {
 function _syncBets() {
     window.activeBets = activeBets;
     localStorage.setItem('activeBets', JSON.stringify(activeBets));
-    if(window.saveBetsToFirestore) window.saveBetsToFirestore();
+    // Fire-and-forget Firestore save with retry
+    if(window.saveBetsToFirestore) {
+        window.saveBetsToFirestore().catch(err => {
+            console.error('Bet save failed, will retry...', err);
+            // Retry once after 2s
+            setTimeout(() => {
+                if(window.saveBetsToFirestore) window.saveBetsToFirestore().catch(() => {});
+            }, 2000);
+        });
+    }
 }
 
 function updateBetStatus(betId, newStatus) {
