@@ -120,9 +120,9 @@ window.onload = () => {
                     swapped = true;
                 }
             });
-            if(swapped) { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); localStorage.setItem('swap_stake_bonus_done_v1','1'); console.log('Swapped stake/bonus for existing accounts'); }
+            if(swapped) { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); localStorage.setItem('swap_stake_bonus_done_v1','1'); /* console.log('Swapped stake/bonus for existing accounts'); */ }
         }
-    } catch(e){ console.error('Migration error', e); }
+    } catch(e){ /* console.error('Migration error', e); */ }
     if(!data.graphData) data.graphData = [];
     
     // CLEAN UP DUPLICATES: Keep only the last entry for each date
@@ -147,9 +147,14 @@ function initFresh() {
     saveData();
 }
 
+let _saveDataTimer = null;
 async function saveData() { 
     data.lastSaved = new Date().toLocaleString(); 
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data)); 
+    // Debounce localStorage writes to avoid blocking main thread frequently
+    clearTimeout(_saveDataTimer);
+    _saveDataTimer = setTimeout(() => {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }, 100);
     // Save to Firestore in background (don't block UI)
     if (window.saveUserDataToFirestore) {
         isSaving = true;
@@ -1105,9 +1110,14 @@ function formatBetDate(dateStr) {
     } catch(e) { return dateStr; }
 }
 
+let _syncBetsTimer = null;
 function _syncBets() {
     window.activeBets = activeBets;
-    localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    // Debounce localStorage writes
+    clearTimeout(_syncBetsTimer);
+    _syncBetsTimer = setTimeout(() => {
+        localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    }, 150);
     // Fire-and-forget Firestore save with retry
     if(window.saveBetsToFirestore) {
         window.saveBetsToFirestore().catch(err => {
@@ -1916,9 +1926,9 @@ async function loadEventMarkets(sportKey, idx) {
     window.addEventListener('resize', () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(resize, 150); });
 
     const isMobile = window.innerWidth <= 768;
-    const DOT_COUNT = isMobile ? 22 : 30;
-    const STREAK_COUNT = isMobile ? 8 : 12;
-    const CONNECTION_DIST = isMobile ? 90 : 120; // constellation on all devices
+    const DOT_COUNT = isMobile ? 15 : 22;
+    const STREAK_COUNT = isMobile ? 5 : 8;
+    const CONNECTION_DIST = isMobile ? 0 : 100; // disable connections on mobile for performance
     const colors = [
         { r: 0, g: 255, b: 135 },   // neon green
         { r: 191, g: 64, b: 255 },   // neon purple
@@ -2004,6 +2014,8 @@ async function loadEventMarkets(sportKey, idx) {
         if(CONNECTION_DIST > 0) {
             const dots = particles.filter(p => p.type === 'dot');
             ctx.lineWidth = 0.6;
+            // Batch path operations for better performance
+            const linesToDraw = [];
             for(let i = 0; i < dots.length; i++) {
                 for(let j = i + 1; j < dots.length; j++) {
                     const dx = dots[i].x - dots[j].x;
@@ -2012,17 +2024,21 @@ async function loadEventMarkets(sportKey, idx) {
                     if(distSq < CONNECTION_DIST * CONNECTION_DIST) {
                         const dist = Math.sqrt(distSq);
                         const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
-                        const avgR = (dots[i].r + dots[j].r) >> 1;
-                        const avgG = (dots[i].g + dots[j].g) >> 1;
-                        const avgB = (dots[i].b + dots[j].b) >> 1;
-                        ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
-                        ctx.beginPath();
-                        ctx.moveTo(dots[i].x, dots[i].y);
-                        ctx.lineTo(dots[j].x, dots[j].y);
-                        ctx.stroke();
+                        linesToDraw.push({i, j, lineOpacity});
                     }
                 }
             }
+            // Draw all lines in one pass
+            linesToDraw.forEach(({i, j, lineOpacity}) => {
+                const avgR = (dots[i].r + dots[j].r) >> 1;
+                const avgG = (dots[i].g + dots[j].g) >> 1;
+                const avgB = (dots[i].b + dots[j].b) >> 1;
+                ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
+                ctx.beginPath();
+                ctx.moveTo(dots[i].x, dots[i].y);
+                ctx.lineTo(dots[j].x, dots[j].y);
+                ctx.stroke();
+            });
         }
 
         // Draw particles
@@ -2036,8 +2052,8 @@ async function loadEventMarkets(sportKey, idx) {
                 ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
                 ctx.fill();
 
-                // Glow halo
-                if(p.size > 1.8) {
+                // Glow halo - only for larger dots and skip if opacity too low
+                if(p.size > 2.2 && finalOpacity > 0.15) {
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.07})`;
