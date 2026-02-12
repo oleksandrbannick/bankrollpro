@@ -692,8 +692,9 @@
         position: fixed; bottom: 0; left: 0; right: 0;
         display: flex; justify-content: space-around;
         padding: 8px 16px calc(env(safe-area-inset-bottom, 8px) + 8px) 16px;
-        background: rgba(13, 17, 23, 0.85);
-        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        background: rgba(13, 17, 23, 0.92);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
         border-top: 1px solid var(--glass-border);
         z-index: 100;
     }
@@ -1053,23 +1054,35 @@
     /* --- SCREENS (Bottom Sheet Modals) --- */
     .screen-backdrop {
         position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+        background: rgba(0,0,0,0.5);
         z-index: 199; opacity: 0; pointer-events: none;
-        transition: opacity 0.3s ease;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0s linear 0.3s;
     }
-    .screen-backdrop.active { opacity: 1; pointer-events: auto; }
+    .screen-backdrop.active {
+        opacity: 1; pointer-events: auto;
+        visibility: visible;
+        transition: opacity 0.3s ease, visibility 0s linear 0s;
+    }
     .screen {
         position: fixed; left: 0; right: 0; bottom: 0;
         top: 6vh;
         background: var(--surface-solid); z-index: 200;
         display: flex; flex-direction: column;
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        transform: translateY(105%);
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.4s;
         pointer-events: none;
+        visibility: hidden;
         box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
         will-change: transform;
     }
-    .screen.active { transform: translateY(0); pointer-events: auto; }
+    .screen.active {
+        transform: translateY(0);
+        pointer-events: auto;
+        visibility: visible;
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0s;
+    }
     .screen-header {
         padding: 20px; border-bottom: 1px solid var(--border);
         text-align: center; background: var(--surface-solid);
@@ -1331,6 +1344,34 @@
     #particle-canvas {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         z-index: 1; pointer-events: none;
+    }
+
+    /* --- MOBILE PERFORMANCE --- */
+    @media (max-width: 768px) {
+        .ambient-orb { filter: blur(60px) !important; }
+        .ambient-orb.orb-3, .ambient-orb.orb-4 { display: none; }
+        .hero-balance-amount {
+            animation: shimmerSweep 8s ease-in-out infinite !important;
+        }
+        .hero-stat-value.pos,
+        .hero-stat-value.neg,
+        .hero-stat-value.bonus {
+            animation-duration: 4s !important;
+        }
+        .card-cash {
+            animation-duration: 5s !important;
+        }
+        .hero-change, .hero-change.negative {
+            animation: pillFlow 5s ease-in-out infinite !important;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .ambient-orb, .hero-balance-amount, .hero-stat-value,
+        .card-cash, .hero-change, .nav-item.active::after,
+        .quick-action-btn.primary, .neon-alive {
+            animation: none !important;
+        }
+        #particle-canvas { display: none; }
     }
 
     /* --- BALANCE GLOW PULSE + HOLOGRAPHIC SHIMMER + NEON ALIVE --- */
@@ -1613,18 +1654,26 @@
   <div style="background: var(--surface); padding: 30px 20px 20px; border-radius: 16px; width: 320px; text-align: center; border: 1px solid var(--border);">
     <div class="auth-modal-logo">
       <svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- Coin Stack (B shape) -->
-        <ellipse cx="30" cy="25" rx="14" ry="5" fill="#FFD700" opacity="0.9"/>
-        <ellipse cx="30" cy="35" rx="14" ry="5" fill="#FFA500" opacity="0.9"/>
-        <ellipse cx="30" cy="45" rx="14" ry="5" fill="#FFD700" opacity="0.9"/>
-        <rect x="16" y="25" width="28" height="20" fill="#DAA520" opacity="0.7"/>
-        <!-- Growth Arrow -->
-        <path d="M 45 60 L 75 30 L 75 45 L 85 35 L 75 25 L 75 40 L 50 65" stroke="#3fb950" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="50" cy="65" r="2" fill="#3fb950"/>
-        <circle cx="60" cy="52" r="2" fill="#3fb950"/>
-        <circle cx="70" cy="38" r="2" fill="#3fb950"/>
-        <!-- Dollar Sign -->
-        <text x="70" y="80" font-size="28" font-weight="bold" fill="#FFD700">$</text>
+        <defs>
+          <linearGradient id="authLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00FF87"/>
+            <stop offset="100%" stop-color="#BF40FF"/>
+          </linearGradient>
+          <linearGradient id="authLogoGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00FF87" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#BF40FF" stop-opacity="0.15"/>
+          </linearGradient>
+          <filter id="authNeon">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="url(#authLogoGlow)"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" stroke="url(#authLogoGrad)" stroke-width="2.5" fill="none" opacity="0.7"/>
+        <path d="M 30 26 L 30 74 L 52 74 C 66 74 72 66 72 59 C 72 52 66 48 58 47 C 64 45 68 41 68 35 C 68 28 62 26 52 26 Z M 39 34 L 50 34 C 57 34 60 36 60 39.5 C 60 43 57 45 50 45 L 39 45 Z M 39 52 L 52 52 C 60 52 64 55 64 59.5 C 64 64 60 66 52 66 L 39 66 Z" fill="url(#authLogoGrad)" filter="url(#authNeon)"/>
+        <path d="M 57 74 L 66 58 L 74 63 L 86 42" stroke="#00FF87" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#authNeon)"/>
+        <circle cx="86" cy="42" r="3.5" fill="#00FF87" filter="url(#authNeon)"/>
+        <circle cx="88" cy="30" r="2" fill="#BF40FF" opacity="0.7"/>
       </svg>
     </div>
     <h3 style="color: var(--text);">Sign In / Sign Up</h3>
@@ -1658,25 +1707,28 @@
                 <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#00FF87;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#00CC6A;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#BF40FF;stop-opacity:1" />
+                            <stop offset="0%" stop-color="#00FF87"/>
+                            <stop offset="100%" stop-color="#BF40FF"/>
                         </linearGradient>
-                        <linearGradient id="greenGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#34D399;stop-opacity:1" />
+                        <linearGradient id="logoGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00FF87" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="#BF40FF" stop-opacity="0.15"/>
                         </linearGradient>
+                        <filter id="logoNeon">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
                     </defs>
-                    <!-- Background circle -->
-                    <circle cx="50" cy="50" r="46" fill="url(#logoGrad)" opacity="0.15"/>
-                    <circle cx="50" cy="50" r="46" stroke="url(#logoGrad)" stroke-width="3" fill="none" opacity="0.6"/>
-                    <!-- Stylized B -->
-                    <path d="M 28 25 L 28 75 L 50 75 Q 70 75 70 60 Q 70 50 55 48 Q 68 46 68 35 Q 68 25 50 25 Z M 38 33 L 48 33 Q 56 33 56 38 Q 56 44 48 44 L 38 44 Z M 38 52 L 50 52 Q 60 52 60 60 Q 60 67 50 67 L 38 67 Z" fill="url(#logoGrad)"/>
-                    <!-- Growth arrow -->
-                    <path d="M 62 70 L 80 52 M 80 52 L 80 62 M 80 52 L 70 52" stroke="url(#greenGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <!-- Sparkle dots -->
-                    <circle cx="75" cy="35" r="3" fill="#34D399" opacity="0.8"/>
-                    <circle cx="82" cy="42" r="2" fill="#34D399" opacity="0.5"/>
+                    <!-- Rounded square background -->
+                    <rect x="6" y="6" width="88" height="88" rx="22" fill="url(#logoGlow)"/>
+                    <rect x="6" y="6" width="88" height="88" rx="22" stroke="url(#logoGrad)" stroke-width="2.5" fill="none" opacity="0.7"/>
+                    <!-- Clean modern B -->
+                    <path d="M 30 26 L 30 74 L 52 74 C 66 74 72 66 72 59 C 72 52 66 48 58 47 C 64 45 68 41 68 35 C 68 28 62 26 52 26 Z M 39 34 L 50 34 C 57 34 60 36 60 39.5 C 60 43 57 45 50 45 L 39 45 Z M 39 52 L 52 52 C 60 52 64 55 64 59.5 C 64 64 60 66 52 66 L 39 66 Z" fill="url(#logoGrad)" filter="url(#logoNeon)"/>
+                    <!-- Integrated trend line -->
+                    <path d="M 57 74 L 66 58 L 74 63 L 86 42" stroke="#00FF87" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#logoNeon)"/>
+                    <circle cx="86" cy="42" r="3.5" fill="#00FF87" filter="url(#logoNeon)"/>
+                    <!-- Accent sparkle -->
+                    <circle cx="88" cy="30" r="2" fill="#BF40FF" opacity="0.7"/>
                 </svg>
             </div>
             <span>Bankroll Pro</span>
@@ -3871,9 +3923,10 @@
         resize();
         window.addEventListener('resize', resize);
 
-        const DOT_COUNT = 30;
-        const STREAK_COUNT = 12;
-        const CONNECTION_DIST = 120; // max distance for constellation lines
+        const isMobile = window.innerWidth <= 768;
+        const DOT_COUNT = isMobile ? 16 : 30;
+        const STREAK_COUNT = isMobile ? 5 : 12;
+        const CONNECTION_DIST = isMobile ? 0 : 120; // disabled on mobile for perf
         const colors = [
             { r: 0, g: 255, b: 135 },   // neon green
             { r: 191, g: 64, b: 255 },   // neon purple
@@ -3955,24 +4008,27 @@
                 if(p.y > h + 30) p.y = -30;
             });
 
-            // Draw constellation connection lines between nearby dots
-            const dots = particles.filter(p => p.type === 'dot');
-            ctx.lineWidth = 0.6;
-            for(let i = 0; i < dots.length; i++) {
-                for(let j = i + 1; j < dots.length; j++) {
-                    const dx = dots[i].x - dots[j].x;
-                    const dy = dots[i].y - dots[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if(dist < CONNECTION_DIST) {
-                        const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
-                        const avgR = (dots[i].r + dots[j].r) >> 1;
-                        const avgG = (dots[i].g + dots[j].g) >> 1;
-                        const avgB = (dots[i].b + dots[j].b) >> 1;
-                        ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
-                        ctx.beginPath();
-                        ctx.moveTo(dots[i].x, dots[i].y);
-                        ctx.lineTo(dots[j].x, dots[j].y);
-                        ctx.stroke();
+            // Draw constellation connection lines between nearby dots (desktop only)
+            if(CONNECTION_DIST > 0) {
+                const dots = particles.filter(p => p.type === 'dot');
+                ctx.lineWidth = 0.6;
+                for(let i = 0; i < dots.length; i++) {
+                    for(let j = i + 1; j < dots.length; j++) {
+                        const dx = dots[i].x - dots[j].x;
+                        const dy = dots[i].y - dots[j].y;
+                        const distSq = dx * dx + dy * dy;
+                        if(distSq < CONNECTION_DIST * CONNECTION_DIST) {
+                            const dist = Math.sqrt(distSq);
+                            const lineOpacity = (1 - dist / CONNECTION_DIST) * 0.12 * opacityMult;
+                            const avgR = (dots[i].r + dots[j].r) >> 1;
+                            const avgG = (dots[i].g + dots[j].g) >> 1;
+                            const avgB = (dots[i].b + dots[j].b) >> 1;
+                            ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
+                            ctx.beginPath();
+                            ctx.moveTo(dots[i].x, dots[i].y);
+                            ctx.lineTo(dots[j].x, dots[j].y);
+                            ctx.stroke();
+                        }
                     }
                 }
             }
