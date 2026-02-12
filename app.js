@@ -952,6 +952,42 @@ const ESPN_SPORTS = {
     'MLS': 'soccer/usa.1'
 };
 
+function formatGameStatus(game) {
+    // Format period/quarter based on sport
+    const period = game.period || 0;
+    const clock = game.clock || '';
+    let periodText = '';
+    
+    // Detect sport from detail or default format
+    const detail = (game.detail || '').toLowerCase();
+    
+    if(detail.includes('quarter') || detail.includes('qtr')) {
+        // Basketball/Football quarters
+        periodText = period === 1 ? 'Q1' : period === 2 ? 'Q2' : period === 3 ? 'Q3' : period === 4 ? 'Q4' : period > 4 ? `OT${period - 4}` : '';
+    } else if(detail.includes('period')) {
+        // Hockey periods
+        periodText = period === 1 ? '1st' : period === 2 ? '2nd' : period === 3 ? '3rd' : period > 3 ? `OT${period - 3}` : '';
+    } else if(detail.includes('inning')) {
+        // Baseball innings
+        periodText = period ? `${period}${period === 1 ? 'st' : period === 2 ? 'nd' : period === 3 ? 'rd' : 'th'}` : '';
+    } else if(detail.includes('half')) {
+        // Soccer halves
+        periodText = period === 1 ? '1H' : period === 2 ? '2H' : '';
+    } else {
+        // Generic fallback
+        periodText = period ? `P${period}` : '';
+    }
+    
+    if(periodText && clock) {
+        return `${periodText} ${clock}`;
+    } else if(periodText) {
+        return periodText;
+    } else if(clock) {
+        return clock;
+    }
+    return 'In Progress';
+}
+
 async function fetchLiveScores(sport) {
     const path = ESPN_SPORTS[sport];
     if(!path) return [];
@@ -1509,7 +1545,7 @@ function renderActiveBets() {
                                 <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
                                 LIVE
                             </span>
-                            <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'In Progress'}</span>
+                            <span style="font-size:11px; color:var(--text-secondary);">${formatGameStatus(game)}</span>
                         </div>
                         <div style="display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text);">
                             <div style="display:flex; align-items:center; gap:6px; flex:1;">
@@ -1538,7 +1574,7 @@ function renderActiveBets() {
                                 <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
                                 LIVE
                             </span>
-                            <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'Live'}</span>
+                            <span style="font-size:11px; color:var(--text-secondary);">${formatGameStatus(game)}</span>
                         </div>
                         <div style="display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text);">
                             <div style="display:flex; align-items:center; gap:6px; flex:1;">
@@ -2035,11 +2071,62 @@ async function fetchEvents(sportKey) {
         const events = await r.json();
         window._oddsEvents = window._oddsEvents || {};
         window._oddsEvents[sportKey] = events.map(ev => ({ id: ev.id || ev.marketId || ev.key || ev.home_team+"_"+ev.away_team, sport: sportKey, home: ev.home_team, away: ev.away_team, commence_time: ev.commence_time, raw: ev }));
+        
+        // Fetch team logos from ESPN
+        await fetchTeamLogosForOdds(sportKey);
+        
         renderEventsList(sportKey);
     } catch (err) {
         list.innerHTML = `<div style="padding:12px;color:#FF6B6B">Error fetching events: ${err.message}</div>`;
         console.error(err);
     }
+}
+
+async function fetchTeamLogosForOdds(sportKey) {
+    // Map odds API sport keys to ESPN paths
+    const espnSportMap = {
+        'basketball_nba': 'basketball/nba',
+        'basketball_ncaab': 'basketball/mens-college-basketball',
+        'americanfootball_nfl': 'football/nfl',
+        'americanfootball_ncaaf': 'football/college-football',
+        'icehockey_nhl': 'hockey/nhl',
+        'baseball_mlb': 'baseball/mlb',
+        'soccer_usa_mls': 'soccer/usa.1'
+    };
+    
+    const espnPath = espnSportMap[sportKey];
+    if(!espnPath) return;
+    
+    try {
+        const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnPath}/scoreboard`);
+        if(!response.ok) return;
+        const data = await response.json();
+        
+        // Cache team logos globally
+        window._teamLogos = window._teamLogos || {};
+        
+        if(data.events) {
+            data.events.forEach(game => {
+                const comp = game.competitions?.[0];
+                if(!comp) return;
+                const competitors = comp.competitors || [];
+                competitors.forEach(team => {
+                    const name = team.team?.displayName;
+                    const logo = team.team?.logo;
+                    if(name && logo) {
+                        window._teamLogos[normalizeTeamName(name)] = logo;
+                    }
+                });
+            });
+        }
+    } catch(err) {
+        console.log('Could not fetch team logos:', err);
+    }
+}
+
+function getTeamLogo(teamName) {
+    if(!window._teamLogos) return '';
+    return window._teamLogos[normalizeTeamName(teamName)] || '';
 }
 
 function renderEventsList(sportKey) {
@@ -2067,9 +2154,11 @@ function renderEventsList(sportKey) {
             <div class="odds-event-header">
                 <div style="flex:1;">
                     <div class="odds-event-teams" style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        ${getTeamLogo(ev.away) ? `<img src="${getTeamLogo(ev.away)}" alt="${ev.away}" style="width:20px; height:20px; object-fit:contain;">` : ''}
                         <span>${ev.away}</span>
                         <span style="color:var(--text-muted); font-size:12px;">@</span>
                         <span>${ev.home}</span>
+                        ${getTeamLogo(ev.home) ? `<img src="${getTeamLogo(ev.home)}" alt="${ev.home}" style="width:20px; height:20px; object-fit:contain;">` : ''}
                     </div>
                     <div class="odds-event-time">📅 ${time}</div>
                 </div>
