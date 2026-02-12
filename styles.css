@@ -873,8 +873,13 @@ body {
 
 @media (max-width: 768px) {
     .odds-btn-mobile {
-        padding: 8px 12px;
+        padding: 10px 12px;
         font-size: 11px;
+        white-space: nowrap;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
