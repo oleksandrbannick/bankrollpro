@@ -1547,12 +1547,12 @@ function renderActiveBets() {
                         </div>
                         <div style="display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:600; color:var(--text);">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                                ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                                 <span>${game.away}</span>
                             </div>
                             <span style="font-weight:700; color:var(--text-secondary); margin:0 12px;">${game.awayScore}-${game.homeScore}</span>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                                ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                                 <span>${game.home}</span>
                             </div>
                         </div>
@@ -1574,12 +1574,12 @@ function renderActiveBets() {
                         </div>
                         <div style="display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:600; color:var(--text);">
                             <div style="display:flex; align-items:center; gap:8px;">
-                                ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                                ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                                 <span>${game.away}</span>
                             </div>
                             <span style="font-weight:700; color:var(--text-secondary); margin:0 12px;">${game.awayScore}-${game.homeScore}</span>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                                ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                                 <span>${game.home}</span>
                             </div>
                         </div>
@@ -1596,12 +1596,12 @@ function renderActiveBets() {
                     </div>
                     <div style="display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:600; color:var(--text);">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                            ${game.awayLogo ? `<img src="${game.awayLogo}" alt="${game.away}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                             <span>${game.away}</span>
                         </div>
                         <span style="font-weight:700; color:var(--text-secondary); margin:0 12px;">${game.awayScore}-${game.homeScore}</span>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:24px; height:24px; object-fit:contain;">` : ''}
+                            ${game.homeLogo ? `<img src="${game.homeLogo}" alt="${game.home}" style="width:28px; height:28px; object-fit:contain;">` : ''}
                             <span>${game.home}</span>
                         </div>
                     </div>
