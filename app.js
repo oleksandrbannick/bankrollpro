@@ -1544,8 +1544,7 @@ function renderActiveBets() {
                         </div>
                     </div>
                 `;
-            }  </div>
-            `;
+            }
         } else if(bet._liveGame && bet._liveGame.isFinal && bet.status === 'pending') {
             const game = bet._liveGame;
             const homeWon = game.homeScore > game.awayScore;
