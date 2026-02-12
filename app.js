@@ -1066,12 +1066,10 @@ async function updateLiveScores() {
     // Check all major sports to ensure we don't miss any games
     const sportsToCheck = new Set(['NBA', 'NFL', 'MLB', 'NHL', 'NCAAF', 'NCAAB']);
     
-    // Fetch scores for detected sports
-    const allGames = [];
-    for(const sport of sportsToCheck) {
-        const games = await fetchLiveScores(sport);
-        allGames.push(...games);
-    }
+    // Fetch scores for all sports in parallel for faster loading
+    const fetchPromises = Array.from(sportsToCheck).map(sport => fetchLiveScores(sport));
+    const sportsResults = await Promise.all(fetchPromises);
+    const allGames = sportsResults.flat();
     
     // Update cache with live games
     liveScores = {};
