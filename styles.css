@@ -877,9 +877,9 @@ body {
         font-size: 10px;
         white-space: normal;
         word-wrap: break-word;
-        width: 70px !important;
-        min-width: 70px;
-        max-width: 70px;
+        width: 75px;
+        min-width: 75px;
+        max-width: 75px;
         min-height: 50px;
         line-height: 1.2;
         display: flex;
@@ -887,10 +887,6 @@ body {
         justify-content: center;
         text-align: center;
         flex-shrink: 0;
-    }
-    .odds-event-actions {
-        width: 70px !important;
-        min-width: 70px;
     }
 }
 

@@ -2162,7 +2162,7 @@ function renderEventsList(sportKey) {
                     </div>
                     <div class="odds-event-time">📅 ${time}</div>
                 </div>
-                <div class="odds-event-actions" style="margin-left:auto; padding-left:12px; flex-shrink:0; width:auto;">
+                <div class="odds-event-actions" style="margin-left:16px; flex-shrink:0;">
                     <button class="odds-btn odds-btn-primary odds-btn-mobile" data-load="${idx}">View All Markets</button>
                 </div>
             </div>
