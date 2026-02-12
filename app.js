@@ -910,7 +910,12 @@ function showTab(t) {
     if(t==='calc') populateHedgeDropdown(); 
     if(t==='graph') setTimeout(drawGraph, 100);
     if(t==='odds') loadOdds();
-    if(t==='bets') renderActiveBets();
+    if(t==='bets') {
+        renderActiveBets();
+        startLiveTracking(); // Start live tracking when viewing bets
+    } else {
+        stopLiveTracking(); // Stop when leaving bets tab
+    }
 }
 function showToast(m) { if(dom.toast) { dom.toast.innerText=m; dom.toast.classList.add('show'); setTimeout(()=>dom.toast.classList.remove('show'),2000); } }
 function openScreen(id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
@@ -928,6 +933,171 @@ window._setActiveBets = function(arr) { activeBets = arr; window.activeBets = ar
 let currentBetFilter = 'pending';
 let currentBetTypeFilter = 'all';
 let currentBetDateFilter = 'all'; // 'all', 'today', '3d', '7d', '30d'
+
+/* -----------------------------
+   LIVE BET TRACKING (ESPN API - Free)
+----------------------------- */
+let liveScores = {}; // Cache: gameKey -> {home, away, homeScore, awayScore, status, clock}
+let liveTrackingInterval = null;
+let isTrackingPaused = false;
+
+const ESPN_SPORTS = {
+    'NBA': 'basketball/nba',
+    'NFL': 'football/nfl',
+    'NCAAF': 'football/college-football',
+    'NCAAB': 'basketball/mens-college-basketball',
+    'MLB': 'baseball/mlb',
+    'NHL': 'hockey/nhl',
+    'Soccer': 'soccer/usa.1',
+    'MLS': 'soccer/usa.1'
+};
+
+async function fetchLiveScores(sport) {
+    const path = ESPN_SPORTS[sport];
+    if(!path) return [];
+    
+    try {
+        const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`);
+        if(!response.ok) return [];
+        const data = await response.json();
+        return data.events || [];
+    } catch(err) {
+        console.error(`ESPN API error for ${sport}:`, err);
+        return [];
+    }
+}
+
+function normalizeTeamName(name) {
+    return name.toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function matchGameToBet(bet, game) {
+    const competitors = game.competitions?.[0]?.competitors || [];
+    if(competitors.length !== 2) return false;
+    
+    const homeTeam = competitors.find(c => c.homeAway === 'home')?.team?.displayName || '';
+    const awayTeam = competitors.find(c => c.homeAway === 'away')?.team?.displayName || '';
+    
+    const betEvent = normalizeTeamName(bet.event);
+    const homeNorm = normalizeTeamName(homeTeam);
+    const awayNorm = normalizeTeamName(awayTeam);
+    
+    // Check if bet event contains either team name
+    return betEvent.includes(homeNorm) || betEvent.includes(awayNorm) || 
+           homeNorm.includes(betEvent) || awayNorm.includes(betEvent);
+}
+
+function extractGameData(game) {
+    const comp = game.competitions?.[0];
+    if(!comp) return null;
+    
+    const competitors = comp.competitors || [];
+    const home = competitors.find(c => c.homeAway === 'home');
+    const away = competitors.find(c => c.homeAway === 'away');
+    
+    if(!home || !away) return null;
+    
+    const status = comp.status?.type?.state || 'pre'; // 'pre', 'in', 'post'
+    const isLive = status === 'in';
+    const isFinal = status === 'post';
+    
+    return {
+        id: game.id,
+        home: home.team.displayName,
+        away: away.team.displayName,
+        homeScore: parseInt(home.score) || 0,
+        awayScore: parseInt(away.score) || 0,
+        status: status,
+        isLive: isLive,
+        isFinal: isFinal,
+        clock: comp.status?.displayClock || '',
+        period: comp.status?.period || 0,
+        detail: comp.status?.type?.detail || ''
+    };
+}
+
+async function updateLiveScores() {
+    if(isTrackingPaused) return;
+    
+    // Get unique sports from pending bets
+    const pendingBets = activeBets.filter(b => b.status === 'pending');
+    if(pendingBets.length === 0) return;
+    
+    // Detect sports from bet events (basic detection)
+    const sportsToCheck = new Set();
+    pendingBets.forEach(bet => {
+        const event = (bet.event || '').toUpperCase();
+        if(event.includes('NBA') || event.includes('LAKERS') || event.includes('WARRIORS')) sportsToCheck.add('NBA');
+        if(event.includes('NFL') || event.includes('CHIEFS') || event.includes('EAGLES')) sportsToCheck.add('NFL');
+        if(event.includes('MLB') || event.includes('YANKEES') || event.includes('DODGERS')) sportsToCheck.add('MLB');
+        if(event.includes('NHL') || event.includes('BRUINS') || event.includes('RANGERS')) sportsToCheck.add('NHL');
+        // Default to checking NBA and NFL if unsure
+        if(sportsToCheck.size === 0) {
+            sportsToCheck.add('NBA');
+            sportsToCheck.add('NFL');
+        }
+    });
+    
+    // Fetch scores for detected sports
+    const allGames = [];
+    for(const sport of sportsToCheck) {
+        const games = await fetchLiveScores(sport);
+        allGames.push(...games);
+    }
+    
+    // Update cache with live games
+    liveScores = {};
+    allGames.forEach(game => {
+        const data = extractGameData(game);
+        if(data) {
+            liveScores[data.id] = data;
+            
+            // Try to match to bets
+            pendingBets.forEach(bet => {
+                if(matchGameToBet(bet, game)) {
+                    bet._liveGame = data;
+                }
+            });
+        }
+    });
+    
+    // Re-render if bets tab is visible
+    if(document.getElementById('bets-view')?.style.display === 'block') {
+        renderActiveBets();
+    }
+}
+
+function startLiveTracking() {
+    if(liveTrackingInterval) return; // Already running
+    
+    console.log('🔴 Live tracking started');
+    updateLiveScores(); // Initial fetch
+    
+    // Poll every 60 seconds for live games
+    liveTrackingInterval = setInterval(updateLiveScores, 60000);
+    
+    // Pause tracking when tab/window not visible
+    document.addEventListener('visibilitychange', () => {
+        if(document.hidden) {
+            isTrackingPaused = true;
+            console.log('⏸️ Live tracking paused (tab hidden)');
+        } else {
+            isTrackingPaused = false;
+            console.log('▶️ Live tracking resumed');
+            updateLiveScores(); // Immediate update on resume
+        }
+    });
+}
+
+function stopLiveTracking() {
+    if(liveTrackingInterval) {
+        clearInterval(liveTrackingInterval);
+        liveTrackingInterval = null;
+        console.log('⏹️ Live tracking stopped');
+    }
+}
 
 function importOddsJamCSV(input) {
     const file = input.files[0];
@@ -1322,6 +1492,40 @@ function renderActiveBets() {
             pairBtn = `<button class="bet-action-btn" style="background:var(--surface-elevated); color:var(--text-muted); font-size:10px; padding:4px 8px;" onclick="event.stopPropagation(); startPairing('${bet.id}')">🔗 Pair</button>`;
         }
         
+        // Live score overlay
+        let liveOverlay = '';
+        if(bet._liveGame && bet._liveGame.isLive && bet.status === 'pending') {
+            const game = bet._liveGame;
+            liveOverlay = `
+                <div class="bet-live-overlay" style="margin:8px 0; padding:8px; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); border-radius:8px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span class="live-badge" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#FF4444;">
+                            <span style="width:6px; height:6px; background:#FF4444; border-radius:50%; animation:pulse 2s infinite;"></span>
+                            LIVE
+                        </span>
+                        <span style="font-size:11px; color:var(--text-secondary);">${game.clock || 'Live'}</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text);">
+                        ${game.away} ${game.awayScore} - ${game.homeScore} ${game.home}
+                    </div>
+                </div>
+            `;
+        } else if(bet._liveGame && bet._liveGame.isFinal && bet.status === 'pending') {
+            const game = bet._liveGame;
+            const homeWon = game.homeScore > game.awayScore;
+            liveOverlay = `
+                <div class="bet-live-overlay" style="margin:8px 0; padding:8px; background:rgba(155,155,155,0.1); border:1px solid var(--border); border-radius:8px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:600; color:var(--text-secondary);">FINAL</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text);">
+                        ${game.away} ${game.awayScore} - ${game.homeScore} ${game.home}
+                    </div>
+                    <div style="font-size:11px; color:var(--warning); margin-top:4px;">📝 Mark bet result above</div>
+                </div>
+            `;
+        }
+        
         return `
             <div class="bet-card ${statusClass} ${isPaired ? 'paired-bet' : ''}" data-id="${bet.id}" style="${isPaired ? 'flex:1; min-width:0;' : ''}">
                 <div class="bet-card-header">
@@ -1336,6 +1540,7 @@ function renderActiveBets() {
                     <div class="bet-selection">${bet.selection}</div>
                     <div class="bet-event">${bet.event}${bet.market ? ' • ' + bet.market : ''}</div>
                     ${bet.date ? `<div class="bet-date" style="font-size:12px; color:var(--text-secondary); margin-top:4px; font-weight:500;">📅 ${formatBetDate(bet.date)}</div>` : ''}
+                    ${liveOverlay}
                     <div class="bet-details">
                         <div class="bet-detail">Odds: <span>${oddsDisplay}</span></div>
                         <div class="bet-detail">Stake: <span>$${bet.stake.toFixed(2)}</span></div>
