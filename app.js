@@ -908,7 +908,6 @@ function importOddsJamCSV(input) {
             
             // Parse header to find column indices - OddsJam specific
             const header = parseCSVLine(lines[0]);
-            console.log('CSV Headers:', header);
             
             const cols = {};
             header.forEach((h, i) => {
@@ -921,7 +920,7 @@ function importOddsJamCSV(input) {
                 if(key === 'stake') cols.stake = i;
                 if(key === 'percentage') cols.ev = i;  // OddsJam uses 'percentage' for EV%
                 if(key === 'market_name') cols.market = i;
-                if(key === 'event_start_date') cols.date = i;
+                if(key === 'event_start_date' || key === 'date' || key === 'placed_date' || key === 'created_at' || key === 'start_date' || key === 'game_date') { if(cols.date === undefined) cols.date = i; }
                 if(key === 'potential_payout') cols.payout = i;
                 if(key === 'bet_profit') cols.profit = i;
                 if(key === 'bet_type') cols.type = i;
@@ -931,8 +930,6 @@ function importOddsJamCSV(input) {
                 if(key === 'sport') cols.sport = i;
                 if(key === 'game_id') cols.gameId = i;  // For pairing bets
             });
-            
-            console.log('Detected columns:', cols);
             
             // Parse data rows
             const bets = [];
@@ -1095,6 +1092,15 @@ function filterBetDate(range) {
         el.classList.toggle('active', el.dataset.date === range);
     });
     renderActiveBets();
+}
+
+function formatBetDate(dateStr) {
+    if(!dateStr) return '';
+    try {
+        const d = new Date(dateStr);
+        if(isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch(e) { return dateStr; }
 }
 
 function _syncBets() {
@@ -1276,6 +1282,7 @@ function renderActiveBets() {
                 <div class="bet-card-body">
                     <div class="bet-selection">${bet.selection}</div>
                     <div class="bet-event">${bet.event}${bet.market ? ' • ' + bet.market : ''}</div>
+                    ${bet.date ? `<div class="bet-date" style="font-size:11px; color:var(--text-muted); margin-top:2px;">📅 ${formatBetDate(bet.date)}</div>` : ''}
                     <div class="bet-details">
                         <div class="bet-detail">Odds: <span>${oddsDisplay}</span></div>
                         <div class="bet-detail">Stake: <span>$${bet.stake.toFixed(2)}</span></div>

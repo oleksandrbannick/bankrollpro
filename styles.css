@@ -292,7 +292,7 @@ body {
     border-left: 3px solid var(--card-accent, var(--primary));
     border-radius: var(--radius-md); padding: 0; margin-bottom: 8px;
     overflow: hidden; cursor: pointer;
-    transition: all var(--transition-medium);
+    transition: background var(--transition-medium), border-color var(--transition-medium);
     position: relative;
 }
 .card:hover {
@@ -456,10 +456,10 @@ body {
 .bets-filter {
     padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
     background: var(--surface); color: var(--text-secondary); cursor: pointer;
-    white-space: nowrap; transition: all 0.2s;
+    white-space: nowrap; transition: all 0.2s; border: 1px solid var(--border);
 }
-.bets-filter.active { background: var(--primary); color: #000; }
-.bets-filter:hover:not(.active) { background: var(--surface-hover); }
+.bets-filter.active { background: var(--primary); color: #000; border-color: var(--primary); }
+.bets-filter:hover:not(.active) { background: var(--surface-hover); border-color: var(--text-muted); }
 
 .bets-type-tabs {
     display: flex; gap: 6px; padding: 0 20px 12px;

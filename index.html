@@ -203,11 +203,28 @@
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const loaded = docSnap.data().activeBets || [];
-        window.activeBets = loaded;
-        // Also update the module-level variable via setter
-        if (window._setActiveBets) window._setActiveBets(loaded);
-        localStorage.setItem('activeBets', JSON.stringify(loaded));
+        // If Firestore has bets, use them (cloud is source of truth)
+        // If Firestore is empty but localStorage has bets, keep local and push to cloud
+        const localBets = JSON.parse(localStorage.getItem('activeBets') || '[]');
+        if (loaded.length === 0 && localBets.length > 0) {
+          // Local has data Firestore doesn't — push local to cloud
+          window.activeBets = localBets;
+          if (window._setActiveBets) window._setActiveBets(localBets);
+          await setDoc(doc(db, 'users', currentUser.uid, 'data', 'bets'), { activeBets: localBets });
+        } else {
+          window.activeBets = loaded;
+          if (window._setActiveBets) window._setActiveBets(loaded);
+          localStorage.setItem('activeBets', JSON.stringify(loaded));
+        }
         if (window.renderActiveBets) window.renderActiveBets();
+      } else {
+        // No Firestore doc — if local bets exist, push them to cloud
+        const localBets = JSON.parse(localStorage.getItem('activeBets') || '[]');
+        if (localBets.length > 0) {
+          window.activeBets = localBets;
+          if (window._setActiveBets) window._setActiveBets(localBets);
+          await setDoc(doc(db, 'users', currentUser.uid, 'data', 'bets'), { activeBets: localBets });
+        }
       }
     } catch (error) {
       console.error('Error loading bets:', error);
