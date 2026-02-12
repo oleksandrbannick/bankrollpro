@@ -873,18 +873,24 @@ body {
 
 @media (max-width: 768px) {
     .odds-btn-mobile {
-        padding: 10px 10px;
+        padding: 10px;
         font-size: 10px;
         white-space: normal;
         word-wrap: break-word;
+        width: 70px !important;
         min-width: 70px;
         max-width: 70px;
-        min-height: 42px;
+        min-height: 50px;
         line-height: 1.2;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
+        flex-shrink: 0;
+    }
+    .odds-event-actions {
+        width: 70px !important;
+        min-width: 70px;
     }
 }
 
