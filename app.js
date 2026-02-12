@@ -1383,18 +1383,23 @@ function renderActiveBets() {
     }
     // Apply date filter
     if(currentBetDateFilter !== 'all') {
-        const now = new Date();
-        now.setHours(23,59,59,999);
-        let cutoff = new Date();
-        if(currentBetDateFilter === 'today') { cutoff.setHours(0,0,0,0); }
-        else if(currentBetDateFilter === '3d') { cutoff.setDate(cutoff.getDate() - 3); cutoff.setHours(0,0,0,0); }
-        else if(currentBetDateFilter === '7d') { cutoff.setDate(cutoff.getDate() - 7); cutoff.setHours(0,0,0,0); }
-        else if(currentBetDateFilter === '30d') { cutoff.setDate(cutoff.getDate() - 30); cutoff.setHours(0,0,0,0); }
-        bets = bets.filter(b => {
-            if(!b.date) return true; // keep bets with no date
-            const d = new Date(b.date);
-            return !isNaN(d.getTime()) && d >= cutoff;
-        });
+        if(currentBetDateFilter === 'live') {
+            // Only show bets with live games
+            bets = bets.filter(b => b._liveGame && b._liveGame.isLive);
+        } else {
+            const now = new Date();
+            now.setHours(23,59,59,999);
+            let cutoff = new Date();
+            if(currentBetDateFilter === 'today') { cutoff.setHours(0,0,0,0); }
+            else if(currentBetDateFilter === '3d') { cutoff.setDate(cutoff.getDate() - 3); cutoff.setHours(0,0,0,0); }
+            else if(currentBetDateFilter === '7d') { cutoff.setDate(cutoff.getDate() - 7); cutoff.setHours(0,0,0,0); }
+            else if(currentBetDateFilter === '30d') { cutoff.setDate(cutoff.getDate() - 30); cutoff.setHours(0,0,0,0); }
+            bets = bets.filter(b => {
+                if(!b.date) return true; // keep bets with no date
+                const d = new Date(b.date);
+                return !isNaN(d.getTime()) && d >= cutoff;
+            });
+        }
     }
     
     if(bets.length === 0) {
