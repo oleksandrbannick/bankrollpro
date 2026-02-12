@@ -118,8 +118,9 @@
       // User signed out: Reset session flags so next sign-in loads fresh
       hasLoadedForSession = false;
       lastKnownUserId = null;
-      activeBets = [];
-      renderActiveBets();
+      if(window._setActiveBets) window._setActiveBets([]);
+      localStorage.removeItem('activeBets');
+      if(window.renderActiveBets) renderActiveBets();
       document.getElementById('auth-btn').innerHTML = '<i data-lucide="lock"></i>';
       document.getElementById('auth-btn').onclick = () => toggleAuthModal();
       if(window.refreshIcons) refreshIcons(); else if(window.lucide) lucide.createIcons();
@@ -201,11 +202,12 @@
       const docRef = doc(db, 'users', currentUser.uid, 'data', 'bets');
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        // Assuming activeBets is a global variable
-        if (window.activeBets !== undefined) {
-          window.activeBets = docSnap.data().activeBets || [];
-          if (window.renderActiveBets) window.renderActiveBets();
-        }
+        const loaded = docSnap.data().activeBets || [];
+        window.activeBets = loaded;
+        // Also update the module-level variable via setter
+        if (window._setActiveBets) window._setActiveBets(loaded);
+        localStorage.setItem('activeBets', JSON.stringify(loaded));
+        if (window.renderActiveBets) window.renderActiveBets();
       }
     } catch (error) {
       console.error('Error loading bets:', error);
@@ -706,6 +708,13 @@
             <div class="bets-type-tab" data-type="ev" onclick="filterBetType('ev')">📊 EV+</div>
             <div class="bets-type-tab" data-type="arb" onclick="filterBetType('arb')">⚖️ Arb</div>
             <div class="bets-type-tab" data-type="freebet" onclick="filterBetType('freebet')">🎁 Free</div>
+        </div>
+        <div class="bets-date-tabs">
+            <div class="bets-date-tab active" data-date="all" onclick="filterBetDate('all')">All Dates</div>
+            <div class="bets-date-tab" data-date="today" onclick="filterBetDate('today')">Today</div>
+            <div class="bets-date-tab" data-date="3d" onclick="filterBetDate('3d')">3 Days</div>
+            <div class="bets-date-tab" data-date="7d" onclick="filterBetDate('7d')">7 Days</div>
+            <div class="bets-date-tab" data-date="30d" onclick="filterBetDate('30d')">30 Days</div>
         </div>
         <div id="bets-list"></div>
         <div id="bets-summary" class="bets-summary"></div>

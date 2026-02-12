@@ -299,8 +299,13 @@ body {
     background: var(--surface-hover);
     border-color: var(--border-focus);
     border-left-color: var(--card-accent, var(--primary));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 25px color-mix(in srgb, var(--card-accent, var(--primary)) 25%, transparent);
+}
+/* Only apply hover transforms on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 25px color-mix(in srgb, var(--card-accent, var(--primary)) 25%, transparent);
+    }
 }
 .card:active { transform: scale(0.98); transition: transform 0.1s; }
 
@@ -468,6 +473,18 @@ body {
 }
 .bets-type-tab.active { background: var(--surface-elevated); color: var(--text); border-color: var(--text-muted); }
 .bets-type-tab:hover:not(.active) { border-color: var(--text-muted); }
+
+.bets-date-tabs {
+    display: flex; gap: 6px; padding: 0 20px 12px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.bets-date-tab {
+    padding: 5px 10px; border-radius: 14px; font-size: 11px; font-weight: 600;
+    background: transparent; color: var(--text-muted); cursor: pointer;
+    white-space: nowrap; transition: all 0.2s; border: 1px solid var(--border);
+}
+.bets-date-tab.active { background: var(--purple-bg); color: var(--purple); border-color: var(--purple); }
+.bets-date-tab:hover:not(.active) { border-color: var(--text-muted); }
 
 #bets-list { padding: 12px 16px 16px; }
 
@@ -1203,8 +1220,8 @@ body.hide-quick-actions .hero-section { padding-bottom: 20px; }
 
 /* --- SMOOTH ALL TRANSITIONS --- */
 .hero-section, .calc-screen, .bets-summary, .graph-filters, .odds-header,
-.bets-filter, .bets-type-tab, .graph-filter-btn, .btn, .odds-btn {
+.bets-filter, .bets-type-tab, .bets-date-tab, .graph-filter-btn, .btn, .odds-btn {
     transition: all var(--transition-medium);
 }
-.bets-filter:active, .bets-type-tab:active, .graph-filter-btn:active,
+.bets-filter:active, .bets-type-tab:active, .bets-date-tab:active, .graph-filter-btn:active,
 .btn:active, .odds-btn:active { transform: scale(0.95); transition: transform 0.1s; }

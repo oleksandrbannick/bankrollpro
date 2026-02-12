@@ -889,8 +889,12 @@ function toggleDebugPanel() { const d = document.getElementById('inpage-debug');
    Active Bets - OddsJam CSV Import
 ----------------------------- */
 let activeBets = JSON.parse(localStorage.getItem('activeBets') || '[]');
+window.activeBets = activeBets; // Expose for Firebase module sync
+// Bridge so Firebase module can update the module-scoped variable
+window._setActiveBets = function(arr) { activeBets = arr; window.activeBets = arr; };
 let currentBetFilter = 'pending';
 let currentBetTypeFilter = 'all';
+let currentBetDateFilter = 'all'; // 'all', 'today', '3d', '7d', '30d'
 
 function importOddsJamCSV(input) {
     const file = input.files[0];
@@ -1038,7 +1042,7 @@ function importOddsJamCSV(input) {
             bets.sort((a, b) => b.ev - a.ev);
             
             activeBets = bets;
-            window.saveBetsToFirestore();
+            _syncBets();
             showToast(`Imported ${bets.length} bets`);
             renderActiveBets();
         } catch(err) {
@@ -1085,11 +1089,24 @@ function filterBetType(type) {
     renderActiveBets();
 }
 
+function filterBetDate(range) {
+    currentBetDateFilter = range;
+    document.querySelectorAll('.bets-date-tab').forEach(el => {
+        el.classList.toggle('active', el.dataset.date === range);
+    });
+    renderActiveBets();
+}
+
+function _syncBets() {
+    window.activeBets = activeBets;
+    localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    if(window.saveBetsToFirestore) window.saveBetsToFirestore();
+}
+
 function updateBetStatus(betId, newStatus) {
     const bet = activeBets.find(b => b.id === betId);
     if(bet) {
         bet.status = newStatus;
-        // Calculate profit for won bets
         if(newStatus === 'won') {
             const odds = bet.odds;
             let payout = 0;
@@ -1103,7 +1120,7 @@ function updateBetStatus(betId, newStatus) {
         } else if(newStatus === 'lost') {
             bet.profit = -bet.stake;
         }
-        localStorage.setItem('activeBets', JSON.stringify(activeBets));
+        _syncBets();
         renderActiveBets();
         showToast(`Marked as ${newStatus}`);
     }
@@ -1111,7 +1128,7 @@ function updateBetStatus(betId, newStatus) {
 
 function deleteBet(betId) {
     activeBets = activeBets.filter(b => b.id !== betId);
-    localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    _syncBets();
     renderActiveBets();
     showToast('Bet deleted');
 }
@@ -1134,6 +1151,21 @@ function renderActiveBets() {
     // Apply type filter
     if(currentBetTypeFilter !== 'all') {
         bets = bets.filter(b => b.type === currentBetTypeFilter);
+    }
+    // Apply date filter
+    if(currentBetDateFilter !== 'all') {
+        const now = new Date();
+        now.setHours(23,59,59,999);
+        let cutoff = new Date();
+        if(currentBetDateFilter === 'today') { cutoff.setHours(0,0,0,0); }
+        else if(currentBetDateFilter === '3d') { cutoff.setDate(cutoff.getDate() - 3); cutoff.setHours(0,0,0,0); }
+        else if(currentBetDateFilter === '7d') { cutoff.setDate(cutoff.getDate() - 7); cutoff.setHours(0,0,0,0); }
+        else if(currentBetDateFilter === '30d') { cutoff.setDate(cutoff.getDate() - 30); cutoff.setHours(0,0,0,0); }
+        bets = bets.filter(b => {
+            if(!b.date) return true; // keep bets with no date
+            const d = new Date(b.date);
+            return !isNaN(d.getTime()) && d >= cutoff;
+        });
     }
     
     if(bets.length === 0) {
@@ -1406,7 +1438,7 @@ function renderActiveBets() {
 function clearActiveBets() {
     if(confirm('Clear all active bets?')) {
         activeBets = [];
-        window.saveBetsToFirestore();
+        _syncBets();
         renderActiveBets();
         showToast('Bets cleared');
     }
@@ -1487,7 +1519,7 @@ function pairBets(betId1, betId2) {
         bet2.type = 'freebet';
     }
     
-    localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    _syncBets();
     cancelPairing();
     renderActiveBets();
     showToast('Bets paired! 🔗');
@@ -1497,13 +1529,12 @@ function unpairBets(pairId) {
     activeBets.forEach(bet => {
         if(bet.pairId === pairId) {
             bet.pairId = null;
-            // Reset type if needed - check original isFreebet
             if(!bet.isFreebet && bet.type === 'freebet') {
-                bet.type = 'ev'; // Default back to EV+
+                bet.type = 'ev';
             }
         }
     });
-    localStorage.setItem('activeBets', JSON.stringify(activeBets));
+    _syncBets();
     renderActiveBets();
     showToast('Bets unpaired');
 }
