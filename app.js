@@ -2451,7 +2451,22 @@ async function loadEventMarkets(sportKey, idx) {
                         ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity})`;
                         ctx.beginPath();
                         ctx.moveTo(dots[i].x, dots[i].y);
-                        c (background layer first, then foreground)
+                        ctx.lineTo(dots[j].x, dots[j].y);
+                        ctx.stroke();
+                        
+                        // Subtle glow on lines for elegance
+                        if(lineOpacity > 0.1) {
+                            ctx.strokeStyle = `rgba(${avgR},${avgG},${avgB},${lineOpacity * 0.3})`;
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                            ctx.lineWidth = 0.8;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Draw particles (background layer first, then foreground)
         ['back', 'front'].forEach(layer => {
             particles.filter(p => p.layer === layer || p.type === 'symbol').forEach(p => {
                 const pulseFactor = 0.75 + Math.sin(p.pulse) * 0.25;
@@ -2498,22 +2513,7 @@ async function loadEventMarkets(sportKey, idx) {
                     
                     ctx.restore();
                 }
-            });       ctx.fillStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity * 0.07})`;
-                    ctx.fill();
-                }
-            } else {
-                // Streak — small glowing diagonal line
-                const dx = Math.cos(p.angle) * p.length * 0.5;
-                const dy = Math.sin(p.angle) * p.length * 0.5;
-                ctx.beginPath();
-                ctx.moveTo(p.x - dx, p.y - dy);
-                ctx.lineTo(p.x + dx, p.y + dy);
-                ctx.strokeStyle = `rgba(${p.r},${p.g},${p.b},${finalOpacity})`;
-                ctx.lineWidth = p.thickness;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                ctx.lineWidth = 0.6; // Reset for connections
-            }
+            });
         });
 
     }
